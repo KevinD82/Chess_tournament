@@ -1,72 +1,91 @@
 # controllers/player_controller.py
 
-# Importation du modèle Player, qui représente un joueur dans l'application.
 from models.player import Player
-
-# Importation de la table TinyDB contenant les joueurs.
-from database import players_table
-
-# Importation de la vue dédiée aux interactions utilisateur concernant les joueurs.
+from database import players_table, PlayerQuery
 from views.player_view import PlayerView
+from rich.console import Console
+
+console = Console()
 
 
 class PlayerController:
     """
-    Le PlayerController gère toute la logique métier liée aux joueurs :
-    - création d'un joueur
-    - affichage de la liste des joueurs
-    - chargement des joueurs pour d'autres contrôleurs (tournois, rapports)
+    Contrôleur responsable de la gestion des joueurs :
+    - création
+    - affichage
+    - suppression par numéro de liste
+
+    Il utilise PlayerView pour l'affichage et TinyDB pour le stockage.
     """
 
     def __init__(self):
-        # La vue associée à ce contrôleur (affichage + saisies utilisateur)
         self.view = PlayerView()
 
+    # ------------------------------------------------------------------
+    # 1. Création d’un joueur
+    # ------------------------------------------------------------------
     def create_player(self):
         """
-        Demande à la vue les informations nécessaires pour créer un joueur.
-        Si l'utilisateur annule (via 'echap', 'annuler', etc.), la vue renvoie None.
-        Dans ce cas, on retourne simplement au menu sans rien faire.
+        Demande les informations du joueur via la vue,
+        crée un objet Player et l’enregistre dans TinyDB.
         """
         data = self.view.ask_player_info()
-
-        # Annulation utilisateur → retour au menu
         if data is None:
             return
 
-        # Création d'un objet Player à partir des données saisies
         player = Player(**data)
-
-        # Sauvegarde dans la base TinyDB
         players_table.insert(player.to_dict())
-
-        # Confirmation visuelle
         self.view.confirm_player_created(player)
 
+    # ------------------------------------------------------------------
+    # 2. Affichage des joueurs
+    # ------------------------------------------------------------------
     def list_players(self):
-        """
-        Récupère tous les joueurs enregistrés dans TinyDB,
-        les convertit en objets Player,
-        puis les affiche via la vue.
-        """
+        """Charge tous les joueurs depuis TinyDB et les affiche."""
         records = players_table.all()
-
-        # Conversion des dictionnaires TinyDB → objets Player
         players = [Player.from_dict(r) for r in records]
-
-        # Affichage via la vue
         self.view.show_players(players)
 
+    # ------------------------------------------------------------------
+    # 3. Chargement des joueurs sous forme de dict {id: Player}
+    # ------------------------------------------------------------------
     def load_players_lookup(self):
-        """
-        Charge tous les joueurs et retourne un dictionnaire
-        permettant de retrouver un joueur à partir de son identifiant national.
+        """Retourne un dict {national_id: Player} pour les contrôleurs."""
+        records = players_table.all()
+        return {r["national_id"]: Player.from_dict(r) for r in records}
 
-        Ce lookup est utilisé par :
-        - TournamentController (pour reconstruire les joueurs d’un tournoi)
-        - ReportController (pour afficher les rapports)
+    # ------------------------------------------------------------------
+    # 4. Suppression d’un joueur par numéro de liste
+    # ------------------------------------------------------------------
+    def delete_player(self):
+        """
+        Affiche la liste des joueurs avec un numéro,
+        demande un numéro à supprimer,
+        supprime le joueur correspondant dans TinyDB.
         """
         records = players_table.all()
+        players = [Player.from_dict(r) for r in records]
 
-        # On crée un dictionnaire : { national_id : Player }
-        return {r["national_id"]: Player.from_dict(r) for r in records}
+        if not players:
+            console.print("[red]Aucun joueur enregistré.[/red]")
+            return
+
+        # Affichage avec numéros
+        self.view.show_players(players)
+
+        raw = self.view.safe_input("Numéro du joueur à supprimer : ")
+        if raw is None:
+            return
+
+        try:
+            index = int(raw) - 1
+            player = players[index]
+        except (ValueError, IndexError):
+            console.print("[red]Numéro invalide.[/red]")
+            return
+
+        # Suppression dans TinyDB
+        players_table.remove(PlayerQuery.national_id == player.national_id)
+
+        # Confirmation
+        self.view.confirm_player_deleted(player)

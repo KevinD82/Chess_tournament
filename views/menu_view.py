@@ -30,6 +30,7 @@ class MenuView:
         console.print("4. Liste des tournois")
         console.print("5. Gérer un tournoi")
         console.print("6. Rapports")
+        console.print("7. Supprimer un joueur")
         console.print("0. Quitter\n")
 
         # console.input() permet d'afficher une invite stylée

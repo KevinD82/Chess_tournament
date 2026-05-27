@@ -14,6 +14,7 @@ class PlayerView:
     - saisie des informations d’un joueur
     - affichage de confirmation
     - affichage de la liste des joueurs
+    - affichage de confirmation de suppression
 
     Elle ne contient aucune logique métier : uniquement de l'affichage
     et de la récupération de saisie utilisateur.
@@ -27,11 +28,9 @@ class PlayerView:
         Demande une saisie utilisateur avec possibilité d'annuler.
 
         Si l'utilisateur tape :
-        - "echap"
-        - "escape"
-        - "annuler"
-        - "cancel"
-        - "q"
+        - echap / escape
+        - annuler / cancel
+        - q
 
         Alors la saisie est annulée et la méthode retourne None.
         """
@@ -44,7 +43,7 @@ class PlayerView:
         return value
 
     # ------------------------------------------------------------------
-    # 2. Demande des informations pour créer un joueur
+    # 2. Formulaire de création d’un joueur
     # ------------------------------------------------------------------
     def ask_player_info(self):
         """
@@ -70,7 +69,6 @@ class PlayerView:
         if national_id is None:
             return None
 
-        # Les données sont retournées sous forme de dict
         return {
             "last_name": last_name,
             "first_name": first_name,
@@ -82,31 +80,33 @@ class PlayerView:
     # 3. Confirmation de création
     # ------------------------------------------------------------------
     def confirm_player_created(self, player):
-        """
-        Affiche un message confirmant la création du joueur.
-        """
-        console.print(
-            f"[green]Joueur {player.first_name} {player.last_name} créé avec succès ![/green]"
-        )
+        """Affiche un message confirmant la création du joueur."""
+        console.print(f"[green]Joueur {player.first_name} {player.last_name} créé avec succès ![/green]")
 
     # ------------------------------------------------------------------
-    # 4. Affichage de la liste des joueurs
+    # 4. Confirmation de suppression
+    # ------------------------------------------------------------------
+    def confirm_player_deleted(self, player):
+        """Affiche un message confirmant la suppression du joueur."""
+        console.print(f"[red]Joueur {player.first_name} {player.last_name} supprimé avec succès.[/red]")
+
+    # ------------------------------------------------------------------
+    # 5. Affichage de la liste des joueurs
     # ------------------------------------------------------------------
     def show_players(self, players):
         """
         Affiche la liste des joueurs dans un tableau Rich.
-
-        players : liste d'objets Player
+        Ajoute une colonne "N°" pour permettre la suppression par numéro.
         """
         table = Table(title="Liste des joueurs")
 
+        table.add_column("N°", style="yellow")
         table.add_column("Nom", style="cyan")
         table.add_column("Prénom", style="cyan")
         table.add_column("ID National", style="magenta")
         table.add_column("Score", style="green")
 
-        # Ajout de chaque joueur dans le tableau
-        for p in players:
-            table.add_row(p.last_name, p.first_name, p.national_id, str(p.score))
+        for i, p in enumerate(players, start=1):
+            table.add_row(str(i), p.last_name, p.first_name, p.national_id, str(p.score))
 
         console.print(table)

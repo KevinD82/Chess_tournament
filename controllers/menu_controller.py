@@ -65,6 +65,10 @@ class MenuController:
             # 6. Accès au sous-menu des rapports
             elif choice == "6":
                 self.report_menu()
+            
+            # 7. Suppression d'un joueur par numéro de liste
+            elif choice == "7":
+                self.player_controller.delete_player()  
 
             # 0. Quitter l'application
             elif choice == "0":
