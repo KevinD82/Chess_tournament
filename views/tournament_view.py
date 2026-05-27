@@ -1,22 +1,23 @@
-# views/player_view.py
+# views/tournament_view.py
 
 from rich.console import Console
 from rich.table import Table
 from rich.panel import Panel
 
-# Console Rich utilisée pour afficher du texte stylé dans le terminal
+# Console Rich pour un affichage stylé
 console = Console()
 
 
-class PlayerView:
+class TournamentView:
     """
-    Vue responsable de toutes les interactions utilisateur concernant les joueurs :
-    - saisie des informations d’un joueur
+    Vue responsable de toutes les interactions utilisateur concernant les tournois :
+    - saisie des informations d’un tournoi
+    - sélection des joueurs
     - affichage de confirmation
-    - affichage de la liste des joueurs
+    - affichage de la liste des tournois
+    - menu de gestion d’un tournoi
 
-    Elle ne contient aucune logique métier : uniquement de l'affichage
-    et de la récupération de saisie utilisateur.
+    Cette vue ne contient aucune logique métier.
     """
 
     # ------------------------------------------------------------------
@@ -27,11 +28,9 @@ class PlayerView:
         Demande une saisie utilisateur avec possibilité d'annuler.
 
         Si l'utilisateur tape :
-        - "echap"
-        - "escape"
-        - "annuler"
-        - "cancel"
-        - "q"
+        - echap / escape
+        - annuler / cancel
+        - q
 
         Alors la saisie est annulée et la méthode retourne None.
         """
@@ -44,69 +43,138 @@ class PlayerView:
         return value
 
     # ------------------------------------------------------------------
-    # 2. Demande des informations pour créer un joueur
+    # 2. Demande des informations pour créer un tournoi
     # ------------------------------------------------------------------
-    def ask_player_info(self):
+    def ask_tournament_info(self):
         """
-        Affiche un formulaire de création de joueur.
-        Chaque champ peut être annulé via safe_input().
-        Retourne un dictionnaire prêt à être utilisé par Player(**data).
+        Affiche un formulaire de création de tournoi.
+        Retourne un dictionnaire prêt à être utilisé par Tournament(**data).
         """
-        console.print(Panel.fit("[bold cyan]Création d'un joueur[/bold cyan]"))
+        console.print(Panel.fit("[bold cyan]Création d'un tournoi[/bold cyan]"))
 
-        last_name = self.safe_input("Nom : ")
-        if last_name is None:
+        name = self.safe_input("Nom du tournoi : ")
+        if name is None:
             return None
 
-        first_name = self.safe_input("Prénom : ")
-        if first_name is None:
+        location = self.safe_input("Lieu : ")
+        if location is None:
             return None
 
-        birthdate = self.safe_input("Date de naissance (JJ/MM/AAAA) : ")
-        if birthdate is None:
+        start_date = self.safe_input("Date de début (JJ/MM/AAAA) : ")
+        if start_date is None:
             return None
 
-        national_id = self.safe_input("Identifiant national : ")
-        if national_id is None:
+        end_date = self.safe_input("Date de fin (JJ/MM/AAAA) : ")
+        if end_date is None:
             return None
 
-        # Les données sont retournées sous forme de dict
+        description = self.safe_input("Description : ")
+        if description is None:
+            return None
+
         return {
-            "last_name": last_name,
-            "first_name": first_name,
-            "birthdate": birthdate,
-            "national_id": national_id
+            "name": name,
+            "location": location,
+            "start_date": start_date,
+            "end_date": end_date,
+            "description": description,
         }
 
     # ------------------------------------------------------------------
-    # 3. Confirmation de création
+    # 3. Sélection des joueurs pour un tournoi
     # ------------------------------------------------------------------
-    def confirm_player_created(self, player):
+    def select_players(self, players):
         """
-        Affiche un message confirmant la création du joueur.
+        Affiche la liste des joueurs et permet d’en sélectionner plusieurs.
+
+        players : liste d'objets Player
+        Retourne une liste de joueurs sélectionnés.
+        """
+        console.print(Panel.fit("[bold cyan]Sélection des joueurs[/bold cyan]"))
+
+        table = Table(title="Joueurs disponibles")
+        table.add_column("Index", style="yellow")
+        table.add_column("Nom", style="cyan")
+        table.add_column("Prénom", style="cyan")
+        table.add_column("ID", style="magenta")
+
+        for i, p in enumerate(players):
+            table.add_row(str(i), p.last_name, p.first_name, p.national_id)
+
+        console.print(table)
+
+        raw = self.safe_input(
+            "Entrez les index des joueurs séparés par des virgules (ex: 0,2,5) : "
+        )
+        if raw is None:
+            return None
+
+        try:
+            indexes = [int(x.strip()) for x in raw.split(",")]
+        except ValueError:
+            console.print("[red]Format invalide.[/red]")
+            return None
+
+        selected = []
+        for idx in indexes:
+            if 0 <= idx < len(players):
+                selected.append(players[idx])
+            else:
+                console.print(f"[red]Index invalide : {idx}[/red]")
+
+        return selected
+
+    # ------------------------------------------------------------------
+    # 4. Confirmation de création
+    # ------------------------------------------------------------------
+    def confirm_tournament_created(self, tournament):
+        """
+        Affiche un message confirmant la création du tournoi.
         """
         console.print(
-            f"[green]Joueur {player.first_name} {player.last_name} créé avec succès ![/green]"
+            Panel.fit(
+                f"[green]Tournoi '{tournament.name}' créé avec succès ![/green]",
+                border_style="green"
+            )
         )
 
     # ------------------------------------------------------------------
-    # 4. Affichage de la liste des joueurs
+    # 5. Affichage de la liste des tournois
     # ------------------------------------------------------------------
-    def show_players(self, players):
+    def show_tournaments(self, tournaments):
         """
-        Affiche la liste des joueurs dans un tableau Rich.
-
-        players : liste d'objets Player
+        Affiche la liste des tournois enregistrés.
         """
-        table = Table(title="Liste des joueurs")
+        table = Table(title="Liste des tournois")
 
         table.add_column("Nom", style="cyan")
-        table.add_column("Prénom", style="cyan")
-        table.add_column("ID National", style="magenta")
-        table.add_column("Score", style="green")
+        table.add_column("Lieu", style="magenta")
+        table.add_column("Dates", style="green")
 
-        # Ajout de chaque joueur dans le tableau
-        for p in players:
-            table.add_row(p.last_name, p.first_name, p.national_id, str(p.score))
+        for t in tournaments:
+            table.add_row(t.name, t.location, f"{t.start_date} → {t.end_date}")
 
         console.print(table)
+
+    # ------------------------------------------------------------------
+    # 6. Menu de gestion d’un tournoi
+    # ------------------------------------------------------------------
+    def tournament_menu(self, tournament):
+        """
+        Affiche le menu de gestion d’un tournoi :
+        - créer un round
+        - saisir les résultats
+        - retour
+        """
+        console.print(
+            Panel.fit(
+                f"[bold cyan]Gestion du tournoi : {tournament.name}[/bold cyan]",
+                border_style="cyan"
+            )
+        )
+
+        console.print("1. Créer un round")
+        console.print("2. Saisir les résultats du round en cours")
+        console.print("0. Retour\n")
+
+        return console.input("[yellow]Votre choix : [/yellow]")
