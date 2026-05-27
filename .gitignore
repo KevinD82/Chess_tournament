@@ -1,0 +1,12 @@
+# Environnement virtuel
+.venv/
+
+# Fichiers Python
+__pycache__/
+*.pyc
+
+# Rapport flake8
+flake8_rapport/
+
+# Fichiers de données
+data/db.json
