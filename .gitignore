@@ -1,12 +1,32 @@
-# Environnement virtuel
+# Environnements virtuels
 .venv/
+venv/
+env/
+ENV/
 
-# Fichiers Python
+# Cache Python
 __pycache__/
 *.pyc
+*.pyo
+*.pyd
+
+# VS Code
+.vscode/
+
+# Logs
+*.log
+
+# Build
+build/
+dist/
+*.egg-info/
+
+# Fichiers système
+.DS_Store
+Thumbs.db
 
 # Rapport flake8
 flake8_rapport/
 
-# Fichiers de données
+# Base de données TinyDB
 data/db.json
