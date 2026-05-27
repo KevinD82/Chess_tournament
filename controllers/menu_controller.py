@@ -18,6 +18,9 @@ class MenuController:
         while True:
             choice = self.view.main_menu()
 
+            if choice is None:
+                continue  # utilisateur a fait "echap"
+
             if choice == "1":
                 self.player_controller.create_player()
 
@@ -44,19 +47,29 @@ class MenuController:
         while True:
             choice = self.view.report_menu()
 
+            if choice is None:
+                return  # retour au menu principal
+
             if choice == "1":
                 self.report_controller.list_all_players()
+
             elif choice == "2":
                 self.report_controller.list_all_tournaments()
+
             elif choice == "3":
                 self.report_controller.tournament_details()
+
             elif choice == "4":
                 self.report_controller.tournament_rounds()
+
             elif choice == "5":
                 self.report_controller.tournament_matches()
+
             elif choice == "6":
                 self.report_controller.tournament_scores()
+
             elif choice == "7":
                 self.report_controller.full_history()
+
             elif choice == "0":
-                break
+                return

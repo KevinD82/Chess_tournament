@@ -2,29 +2,29 @@
 
 from models.tournament import Tournament
 from database import tournaments_table, TournamentQuery
+from views.tournament_view import TournamentView
 from controllers.player_controller import PlayerController
 from controllers.round_controller import RoundController
-from views.tournament_view import TournamentView
 
 
 class TournamentController:
 
     def __init__(self):
+        self.view = TournamentView()
         self.player_controller = PlayerController()
         self.round_controller = RoundController()
-        self.view = TournamentView()
 
     def create_tournament(self):
         data = self.view.ask_tournament_info()
-        players = self.player_controller.load_players_lookup()
+        if data is None:
+            return  # annulé
 
-        selected_players = self.view.select_players(list(players.values()))
+        players = self.player_controller.load_players_lookup().values()
+        selected = self.view.select_players(list(players))
+        if selected is None:
+            return  # annulé
 
-        tournament = Tournament(
-            players=selected_players,
-            **data
-        )
-
+        tournament = Tournament(**data, players=selected)
         tournaments_table.insert(tournament.to_dict())
         self.view.confirm_tournament_created(tournament)
 
@@ -39,8 +39,10 @@ class TournamentController:
 
     def manage_tournament(self):
         name = self.view.ask_tournament_name()
-        record = tournaments_table.get(TournamentQuery.name == name)
+        if name is None:
+            return
 
+        record = tournaments_table.get(TournamentQuery.name == name)
         if not record:
             self.view.error_not_found()
             return
@@ -50,15 +52,14 @@ class TournamentController:
 
         while True:
             choice = self.view.tournament_menu(tournament)
+            if choice is None:
+                return
 
             if choice == "1":
-                new_round = tournament.create_round()
-                self.view.show_round(new_round)
-                tournaments_table.update(tournament.to_dict(), TournamentQuery.name == name)
+                self.round_controller.create_round(tournament)
 
             elif choice == "2":
                 self.round_controller.enter_results(tournament)
-                tournaments_table.update(tournament.to_dict(), TournamentQuery.name == name)
 
             elif choice == "0":
-                break
+                return

@@ -1,4 +1,4 @@
-# views/tournament_view.py
+# views/player_view.py
 
 from rich.console import Console
 from rich.table import Table
@@ -6,74 +6,53 @@ from rich.panel import Panel
 
 console = Console()
 
-class TournamentView:
+class PlayerView:
 
-    def ask_tournament_info(self):
-        console.print(Panel.fit("[bold cyan]Création d'un tournoi[/bold cyan]"))
+    def safe_input(self, message):
+        value = console.input(message)
+        if value.lower() in ("echap", "escape", "annuler", "cancel", "q"):
+            console.print("[yellow]Saisie annulée, retour au menu.[/yellow]")
+            return None
+        return value
 
-        name = console.input("Nom du tournoi : ")
-        location = console.input("Lieu : ")
-        start_date = console.input("Date de début : ")
-        end_date = console.input("Date de fin : ")
-        description = console.input("Description : ")
+    def ask_player_info(self):
+        console.print(Panel.fit("[bold cyan]Création d'un joueur[/bold cyan]"))
+
+        last_name = self.safe_input("Nom : ")
+        if last_name is None:
+            return None
+
+        first_name = self.safe_input("Prénom : ")
+        if first_name is None:
+            return None
+
+        birthdate = self.safe_input("Date de naissance (JJ/MM/AAAA) : ")
+        if birthdate is None:
+            return None
+
+        national_id = self.safe_input("Identifiant national : ")
+        if national_id is None:
+            return None
 
         return {
-            "name": name,
-            "location": location,
-            "start_date": start_date,
-            "end_date": end_date,
-            "description": description
+            "last_name": last_name,
+            "first_name": first_name,
+            "birthdate": birthdate,
+            "national_id": national_id
         }
 
-    def select_players(self, players):
-        console.print(Panel.fit("[bold cyan]Sélection des joueurs[/bold cyan]"))
+    def confirm_player_created(self, player):
+        console.print(f"[green]Joueur {player.first_name} {player.last_name} créé avec succès ![/green]")
 
-        table = Table(title="Joueurs disponibles")
-        table.add_column("Index", style="yellow")
+    def show_players(self, players):
+        table = Table(title="Liste des joueurs")
+
         table.add_column("Nom", style="cyan")
         table.add_column("Prénom", style="cyan")
-        table.add_column("ID", style="magenta")
+        table.add_column("ID National", style="magenta")
+        table.add_column("Score", style="green")
 
-        for i, p in enumerate(players):
-            table.add_row(str(i), p.last_name, p.first_name, p.national_id)
-
-        console.print(table)
-
-        indexes = console.input("Entrez les index des joueurs (séparés par des virgules) : ")
-        indexes = [int(i.strip()) for i in indexes.split(",")]
-
-        return [players[i] for i in indexes]
-
-    def confirm_tournament_created(self, tournament):
-        console.print(f"[green]Tournoi '{tournament.name}' créé avec succès ![/green]")
-
-    def show_tournaments(self, tournaments):
-        table = Table(title="Tournois enregistrés")
-
-        table.add_column("Nom", style="cyan")
-        table.add_column("Lieu", style="magenta")
-        table.add_column("Dates", style="green")
-
-        for t in tournaments:
-            dates = f"{t.start_date} → {t.end_date}"
-            table.add_row(t.name, t.location, dates)
+        for p in players:
+            table.add_row(p.last_name, p.first_name, p.national_id, str(p.score))
 
         console.print(table)
-
-    def ask_tournament_name(self):
-        return console.input("Nom du tournoi à gérer : ")
-
-    def error_not_found(self):
-        console.print("[red]Tournoi introuvable.[/red]")
-
-    def tournament_menu(self, tournament):
-        console.print(Panel.fit(f"[bold cyan]Gestion du tournoi : {tournament.name}[/bold cyan]"))
-
-        console.print("1. Créer un round")
-        console.print("2. Saisir les résultats du round")
-        console.print("0. Retour\n")
-
-        return console.input("[bold yellow]Votre choix : [/bold yellow]")
-
-    def show_round(self, round_obj):
-        console.print(f"[cyan]Nouveau round créé : {round_obj.name}[/cyan]")

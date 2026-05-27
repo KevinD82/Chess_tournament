@@ -12,6 +12,9 @@ class PlayerController:
 
     def create_player(self):
         data = self.view.ask_player_info()
+        if data is None:
+            return  # utilisateur a annulé
+
         player = Player(**data)
         players_table.insert(player.to_dict())
         self.view.confirm_player_created(player)
@@ -23,5 +26,4 @@ class PlayerController:
 
     def load_players_lookup(self):
         records = players_table.all()
-        players = [Player.from_dict(r) for r in records]
-        return {p.national_id: p for p in players}
+        return {r["national_id"]: Player.from_dict(r) for r in records}

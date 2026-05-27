@@ -27,67 +27,40 @@ class ReportController:
         ]
         self.view.show_tournaments(tournaments)
 
-    def tournament_details(self):
+    def _load_tournament(self):
         name = self.view.ask_tournament_name()
-        record = tournaments_table.get(TournamentQuery.name == name)
+        if name is None:
+            return None
 
+        record = tournaments_table.get(TournamentQuery.name == name)
         if not record:
             self.view.error_not_found()
-            return
+            return None
 
         players_lookup = self.player_controller.load_players_lookup()
-        tournament = Tournament.from_dict(record, players_lookup)
+        return Tournament.from_dict(record, players_lookup)
 
-        self.view.show_tournament_details(tournament)
+    def tournament_details(self):
+        t = self._load_tournament()
+        if t:
+            self.view.show_tournament_details(t)
 
     def tournament_rounds(self):
-        name = self.view.ask_tournament_name()
-        record = tournaments_table.get(TournamentQuery.name == name)
-
-        if not record:
-            self.view.error_not_found()
-            return
-
-        players_lookup = self.player_controller.load_players_lookup()
-        tournament = Tournament.from_dict(record, players_lookup)
-
-        self.view.show_rounds(tournament.rounds)
+        t = self._load_tournament()
+        if t:
+            self.view.show_rounds(t.rounds)
 
     def tournament_matches(self):
-        name = self.view.ask_tournament_name()
-        record = tournaments_table.get(TournamentQuery.name == name)
-
-        if not record:
-            self.view.error_not_found()
-            return
-
-        players_lookup = self.player_controller.load_players_lookup()
-        tournament = Tournament.from_dict(record, players_lookup)
-
-        self.view.show_matches(tournament.rounds)
+        t = self._load_tournament()
+        if t:
+            self.view.show_matches(t.rounds)
 
     def tournament_scores(self):
-        name = self.view.ask_tournament_name()
-        record = tournaments_table.get(TournamentQuery.name == name)
-
-        if not record:
-            self.view.error_not_found()
-            return
-
-        players_lookup = self.player_controller.load_players_lookup()
-        tournament = Tournament.from_dict(record, players_lookup)
-
-        self.view.show_final_scores(tournament.players)
+        t = self._load_tournament()
+        if t:
+            self.view.show_final_scores(t.players)
 
     def full_history(self):
-        name = self.view.ask_tournament_name()
-        record = tournaments_table.get(TournamentQuery.name == name)
-
-        if not record:
-            self.view.error_not_found()
-            return
-
-        players_lookup = self.player_controller.load_players_lookup()
-        tournament = Tournament.from_dict(record, players_lookup)
-
-        self.view.show_full_history(tournament)
+        t = self._load_tournament()
+        if t:
+            self.view.show_full_history(t)

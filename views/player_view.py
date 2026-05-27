@@ -8,13 +8,31 @@ console = Console()
 
 class PlayerView:
 
+    def safe_input(self, message):
+        value = console.input(message)
+        if value.lower() in ("echap", "escape", "annuler", "cancel", "q"):
+            console.print("[yellow]Saisie annulée, retour au menu.[/yellow]")
+            return None
+        return value
+
     def ask_player_info(self):
         console.print(Panel.fit("[bold cyan]Création d'un joueur[/bold cyan]"))
 
-        last_name = console.input("Nom : ")
-        first_name = console.input("Prénom : ")
-        birthdate = console.input("Date de naissance (JJ/MM/AAAA) : ")
-        national_id = console.input("Identifiant national : ")
+        last_name = self.safe_input("Nom : ")
+        if last_name is None:
+            return None
+
+        first_name = self.safe_input("Prénom : ")
+        if first_name is None:
+            return None
+
+        birthdate = self.safe_input("Date de naissance (JJ/MM/AAAA) : ")
+        if birthdate is None:
+            return None
+
+        national_id = self.safe_input("Identifiant national : ")
+        if national_id is None:
+            return None
 
         return {
             "last_name": last_name,
