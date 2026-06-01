@@ -21,4 +21,3 @@ def main():
 # Il ne s'exécute pas si le fichier est importé ailleurs.
 if __name__ == "__main__":
     main()
-5
