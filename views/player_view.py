@@ -8,100 +8,89 @@ console = Console()
 
 
 class PlayerView:
-    """
-    Vue responsable de toutes les interactions utilisateur concernant les joueurs :
-    - saisie
-    - validation / modification / annulation
-    - affichage
-    - suppression
-    """
 
-    # --------------------------------------------------------------
-    # Saisie sécurisée (annulation possible)
-    # --------------------------------------------------------------
     def safe_input(self, message):
         value = console.input(message)
         if value.lower() in ("echap", "escape", "annuler", "cancel", "q"):
-            console.print("[yellow]Saisie annulée, retour au menu.[/yellow]")
+            console.print("[yellow]Saisie annulée.[/yellow]")
             return None
         return value
 
-    # --------------------------------------------------------------
-    # Saisie + validation d’un joueur
-    # --------------------------------------------------------------
     def ask_player_info(self):
         """
-        Saisie complète d’un joueur avec :
-        - récapitulatif
-        - valider / modifier / annuler
+        Saisie simple :
+        - Entrée valide
+        - Entrée vide = revenir au champ précédent
         """
 
-        while True:
-            console.print(Panel.fit("[bold cyan]Création d'un joueur[/bold cyan]"))
+        fields = [
+            ("Nom", "last_name"),
+            ("Prénom", "first_name"),
+            ("Date de naissance (JJ/MM/AAAA)", "birthdate"),
+            ("Identifiant national (2 lettres + 5 chiffres)", "national_id"),
+        ]
 
-            last_name = self.safe_input("Nom : ")
-            if last_name is None:
-                return None
+        data = {key: "" for _, key in fields}
+        index = 0
 
-            first_name = self.safe_input("Prénom : ")
-            if first_name is None:
-                return None
+        while 0 <= index < len(fields):
+            label, key = fields[index]
 
-            birthdate = self.safe_input("Date de naissance (JJ/MM/AAAA) : ")
-            if birthdate is None:
-                return None
-
-            national_id = self.safe_input("Identifiant national : ")
-            if national_id is None:
-                return None
-
-            # --- RÉCAPITULATIF ---
             console.print(Panel.fit(
-                f"[bold cyan]Vérification des informations[/bold cyan]\n\n"
-                f"Nom : {last_name}\n"
-                f"Prénom : {first_name}\n"
-                f"Date de naissance : {birthdate}\n"
-                f"ID National : {national_id}\n"
+                f"[bold cyan]Création d'un joueur[/bold cyan]\n\n"
+                f"Champ {index+1}/{len(fields)} : {label}\n"
+                f"Valeur actuelle : [yellow]{data[key] or '(vide)'}[/yellow]\n"
+                f"[dim]Entrée vide = revenir au champ précédent[/dim]"
             ))
 
-            console.print("1. Valider")
-            console.print("2. Modifier")
-            console.print("3. Annuler\n")
+            value = console.input(f"{label} : ")
 
-            choice = console.input("[yellow]Votre choix : [/yellow]")
+            # Retour arrière
+            if value.strip() == "":
+                if index > 0:
+                    index -= 1
+                    continue
+                console.print("[yellow]Déjà au premier champ.[/yellow]")
+                continue
 
-            if choice == "1":
-                return {
-                    "last_name": last_name,
-                    "first_name": first_name,
-                    "birthdate": birthdate,
-                    "national_id": national_id
-                }
+            # Validation date
+            if key == "birthdate":
+                digits = "".join(c for c in value if c.isdigit())
+                if len(digits) != 8:
+                    console.print("[red]Format invalide. Exemple : 01062026[/red]")
+                    continue
+                value = f"{digits[0:2]}/{digits[2:4]}/{digits[4:8]}"
 
-            elif choice == "2":
-                console.print("[cyan]Modification...[/cyan]\n")
+            # Validation ID
+            if key == "national_id":
+                letters = "".join(c for c in value if c.isalpha()).upper()
+                digits = "".join(c for c in value if c.isdigit())
+                if len(letters) != 2 or len(digits) != 5:
+                    console.print("[red]Format invalide. Exemple : AB12345[/red]")
+                    continue
+                value = letters + digits
 
-            elif choice == "3":
-                console.print("[yellow]Création annulée.[/yellow]")
-                return None
+            data[key] = value
+            index += 1
 
-            else:
-                console.print("[red]Choix invalide.[/red]")
+        # Récapitulatif
+        console.print(Panel.fit(
+            f"[bold cyan]Vérification[/bold cyan]\n\n"
+            f"Nom : {data['last_name']}\n"
+            f"Prénom : {data['first_name']}\n"
+            f"Date : {data['birthdate']}\n"
+            f"ID : {data['national_id']}\n"
+        ))
+
+        confirm = console.input("Valider ? (o/N) : ").lower()
+        if confirm == "o":
+            return data
+
+        console.print("[yellow]Création annulée.[/yellow]")
+        return None
 
     # --------------------------------------------------------------
-    # Confirmation création
-    # --------------------------------------------------------------
-    def confirm_player_created(self, player):
-        console.print(f"[green]Joueur {player.first_name} {player.last_name} créé avec succès ![/green]")
-
-    # --------------------------------------------------------------
-    # Confirmation suppression
-    # --------------------------------------------------------------
-    def confirm_player_deleted(self, player):
-        console.print(f"[red]Joueur {player.first_name} {player.last_name} supprimé.[/red]")
-
-    # --------------------------------------------------------------
-    # Affichage numéroté
+    # Affichage numéroté des joueurs
     # --------------------------------------------------------------
     def show_players(self, players):
         table = Table(title="Liste des joueurs")
@@ -113,6 +102,12 @@ class PlayerView:
         table.add_column("Score", style="green")
 
         for i, p in enumerate(players, start=1):
-            table.add_row(str(i), p.last_name, p.first_name, p.national_id, str(p.score))
+            table.add_row(
+                str(i),
+                p.last_name,
+                p.first_name,
+                p.national_id,
+                str(p.score)
+            )
 
         console.print(table)

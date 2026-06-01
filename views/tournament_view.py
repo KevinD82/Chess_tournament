@@ -8,13 +8,10 @@ console = Console()
 
 
 class TournamentView:
-    """
-    Vue responsable de :
-    - création d’un tournoi
-    - validation / modification / annulation
-    - sélection des joueurs
-    """
 
+    # --------------------------------------------------------------
+    # Saisie sécurisée (annulation possible)
+    # --------------------------------------------------------------
     def safe_input(self, message):
         value = console.input(message)
         if value.lower() in ("echap", "escape", "annuler", "cancel", "q"):
@@ -23,71 +20,83 @@ class TournamentView:
         return value
 
     # --------------------------------------------------------------
-    # Saisie + validation d’un tournoi
+    # Saisie intelligente d’un tournoi
     # --------------------------------------------------------------
     def ask_tournament_info(self):
-        while True:
-            console.print(Panel.fit("[bold cyan]Création d'un tournoi[/bold cyan]"))
+        """
+        Saisie simple :
+        - Entrée valide
+        - Entrée vide = revenir au champ précédent
+        """
 
-            name = self.safe_input("Nom : ")
-            if name is None:
-                return None
+        fields = [
+            ("Nom du tournoi", "name"),
+            ("Lieu", "location"),
+            ("Date de début (JJ/MM/AAAA)", "start_date"),
+            ("Date de fin (JJ/MM/AAAA)", "end_date"),
+            ("Description", "description"),
+        ]
 
-            location = self.safe_input("Lieu : ")
-            if location is None:
-                return None
+        data = {key: "" for _, key in fields}
+        index = 0
 
-            start_date = self.safe_input("Date début : ")
-            if start_date is None:
-                return None
+        while 0 <= index < len(fields):
+            label, key = fields[index]
 
-            end_date = self.safe_input("Date fin : ")
-            if end_date is None:
-                return None
-
-            description = self.safe_input("Description : ")
-            if description is None:
-                return None
-
-            # --- RÉCAP ---
             console.print(Panel.fit(
-                f"[bold cyan]Vérification[/bold cyan]\n\n"
-                f"Nom : {name}\n"
-                f"Lieu : {location}\n"
-                f"Début : {start_date}\n"
-                f"Fin : {end_date}\n"
-                f"Description : {description}\n"
+                f"[bold cyan]Création d'un tournoi[/bold cyan]\n\n"
+                f"Champ {index+1}/{len(fields)} : {label}\n"
+                f"Valeur actuelle : [yellow]{data[key] or '(vide)'}[/yellow]\n"
+                f"[dim]Entrée vide = revenir au champ précédent[/dim]"
             ))
 
-            console.print("1. Valider")
-            console.print("2. Modifier")
-            console.print("3. Annuler\n")
+            value = console.input(f"{label} : ")
 
-            choice = console.input("[yellow]Votre choix : [/yellow]")
+            # Retour arrière
+            if value.strip() == "":
+                if index > 0:
+                    index -= 1
+                    continue
+                console.print("[yellow]Déjà au premier champ.[/yellow]")
+                continue
 
-            if choice == "1":
-                return {
-                    "name": name,
-                    "location": location,
-                    "start_date": start_date,
-                    "end_date": end_date,
-                    "description": description,
-                }
+            # Formatage automatique des dates
+            if key in ("start_date", "end_date"):
+                digits = "".join(c for c in value if c.isdigit())
+                if len(digits) != 8:
+                    console.print("[red]Format invalide. Exemple : 01062026[/red]")
+                    continue
+                value = f"{digits[0:2]}/{digits[2:4]}/{digits[4:8]}"
 
-            elif choice == "2":
-                console.print("[cyan]Modification...[/cyan]\n")
+            data[key] = value
+            index += 1
 
-            elif choice == "3":
-                console.print("[yellow]Création annulée.[/yellow]")
-                return None
+        # Récapitulatif
+        console.print(Panel.fit(
+            f"[bold cyan]Vérification du tournoi[/bold cyan]\n\n"
+            f"Nom : {data['name']}\n"
+            f"Lieu : {data['location']}\n"
+            f"Début : {data['start_date']}\n"
+            f"Fin : {data['end_date']}\n"
+            f"Description : {data['description']}\n"
+        ))
 
-            else:
-                console.print("[red]Choix invalide.[/red]")
+        confirm = console.input("Valider ? (o/N) : ").lower()
+        if confirm == "o":
+            return data
+
+        console.print("[yellow]Création annulée.[/yellow]")
+        return None
 
     # --------------------------------------------------------------
-    # Sélection des joueurs avec validation
+    # Sélection des joueurs pour un tournoi
     # --------------------------------------------------------------
     def select_players(self, players):
+        """
+        Affiche la liste des joueurs et permet d'en sélectionner plusieurs.
+        Entrée vide = annuler
+        """
+
         while True:
             console.print(Panel.fit("[bold cyan]Sélection des joueurs[/bold cyan]"))
 
@@ -102,35 +111,32 @@ class TournamentView:
 
             console.print(table)
 
-            raw = self.safe_input("Numéros (ex: 1,3,5) : ")
-            if raw is None:
+            raw = console.input(
+                "[yellow]Numéros des joueurs (ex: 1,3,5) — Entrée vide = annuler : [/yellow]"
+            )
+
+            # Annulation
+            if raw.strip() == "":
+                console.print("[yellow]Sélection annulée.[/yellow]")
                 return None
 
             try:
                 indexes = [int(x.strip()) - 1 for x in raw.split(",")]
                 selected = [players[i] for i in indexes]
-            except:
+            except Exception:
                 console.print("[red]Format invalide.[/red]")
                 continue
 
-            recap = "\n".join(f"- {p.first_name} {p.last_name}" for p in selected)
+            # Récapitulatif
+            recap = "\n".join(
+                f"- {p.first_name} {p.last_name} ({p.national_id})"
+                for p in selected
+            )
 
             console.print(Panel.fit(
                 f"[bold cyan]Joueurs sélectionnés[/bold cyan]\n\n{recap}"
             ))
 
-            console.print("1. Valider")
-            console.print("2. Modifier")
-            console.print("3. Annuler\n")
-
-            choice = console.input("[yellow]Votre choix : [/yellow]")
-
-            if choice == "1":
+            confirm = console.input("Valider ? (o/N) : ").lower()
+            if confirm == "o":
                 return selected
-            elif choice == "2":
-                console.print("[cyan]Modification...[/cyan]\n")
-            elif choice == "3":
-                console.print("[yellow]Sélection annulée.[/yellow]")
-                return None
-            else:
-                console.print("[red]Choix invalide.[/red]")
