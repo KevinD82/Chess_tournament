@@ -1,6 +1,6 @@
 # ♟️ Chess Tournament Manager  
 Gestionnaire de tournois d’échecs — Projet Python (Architecture MVC)
-
+---
 ## 🎯 Objectif du projet
 Ce programme permet de gérer entièrement un tournoi d’échecs :
 - Création de tournois
@@ -15,7 +15,7 @@ Le projet suit une architecture **MVC (Model – View – Controller)** pour gar
 ---
 
 ## 🗂️ Structure du projet
-
+---
 CHESS_TOURNAMENT/
 │
 ├── controllers/
@@ -40,7 +40,7 @@ CHESS_TOURNAMENT/
 ├── main.py               # Point d’entrée du programme
 ├── requirements.txt
 └── README.md
-
+---
 
 ---
 
@@ -51,18 +51,19 @@ Assurez-vous d’avoir Python 3.10+ installé.
 ### 1. Installer les dépendances
 ```bash
 pip install -r requirements.txt
-
-
+---
+---
 ### 2. Lancer l’application
 python main.py
-
+---
 ### Générer le rapport :
 ```bash
 flake8 --format=html --htmldir=flake8-report
-
+---
 ### Le rapport sera disponible ici :
 flake8-report/index.html
 
+---
 🧰 Technologies utilisées
 Python 3
 
@@ -74,6 +75,7 @@ Flake8 + flake8-html — Analyse de qualité du code
 
 Architecture MVC — Séparation claire des responsabilités
 
+---
 🧠 Points forts du projet
 Architecture propre et modulaire
 
@@ -84,7 +86,7 @@ Sauvegarde persistante des données
 Interface console claire et ergonomique
 
 Code entièrement validé par Flake8
-
+---
 👤 Auteur
 Kevin Delcroix  
 Projet OpenClassrooms — Développeur d’Applications Python
