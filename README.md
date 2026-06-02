@@ -39,9 +39,10 @@ CHESS_TOURNAMENT/
 │   └── db.json
 │
 ├── flake8-report/        # Rapport HTML généré (qualité du code)
+├── database.py              
 ├── main.py               # Point d’entrée du programme
-├── requirements.txt
-└── README.md
+├── README.md
+└── requirements.txt
 ```
 
 ### ▶️ Exécution du programme
