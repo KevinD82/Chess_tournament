@@ -54,6 +54,7 @@ pip install -r requirements.txt
 ```
 
 ### 2. Lancer l’application
+```
 python main.py
 ```
 
@@ -63,10 +64,12 @@ flake8 --format=html --htmldir=flake8-report
 ```
 
 ### Le rapport sera disponible ici :
-flake8-report/index.html
-
 ```
+flake8-report/index.html
+```
+
 🧰 Technologies utilisées
+```
 Python 3
 
 TinyDB — Base de données légère en JSON
@@ -76,9 +79,10 @@ Rich — Interface console améliorée
 Flake8 + flake8-html — Analyse de qualité du code
 
 Architecture MVC — Séparation claire des responsabilités
-
 ```
+
 🧠 Points forts du projet
+```
 Architecture propre et modulaire
 
 Gestion complète d’un tournoi Round‑Robin
