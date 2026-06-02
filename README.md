@@ -44,7 +44,7 @@ CHESS_TOURNAMENT/
 └── README.md
 ```
 
-## ▶️ Exécution du programme
+### ▶️ Exécution du programme
 
 Assurez-vous d’avoir Python 3.10+ installé.
 
