@@ -30,3 +30,6 @@ flake8_rapport/
 
 # Base de données TinyDB
 data/db.json
+
+
+
