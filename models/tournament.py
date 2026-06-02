@@ -2,6 +2,7 @@
 
 from models.round import Round
 
+
 class Tournament:
 
     def __init__(self, name, location, start_date, end_date, description):
@@ -15,7 +16,7 @@ class Tournament:
         self.players_ids = []      # IDs des joueurs
 
         self.rounds = []           # objets Round
-        self.generated_rounds = [] # liste de paires d'IDs
+        self.generated_rounds = []  # liste de paires d'IDs
         self.current_round_index = 0
 
         self.final_ranking = []    # [(player_id, score), ...]

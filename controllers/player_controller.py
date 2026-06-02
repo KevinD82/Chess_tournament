@@ -67,8 +67,8 @@ class PlayerController:
         try:
             index = int(choice) - 1
             player = players[index]
-        except:
-            console.print("[red]Choix invalide.[/red]")
+        except Exception as e:
+            console.print(f"[red]Erreur : {e}[/red]")
             return
 
         # Suppression dans TinyDB

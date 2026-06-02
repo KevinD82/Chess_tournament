@@ -119,8 +119,8 @@ class TournamentView:
         try:
             index = int(choice) - 1
             return tournaments[index]
-        except:
-            console.print("[red]Choix invalide.[/red]")
+        except Exception as e:
+            console.print(f"[red]Erreur : {e}[/red]")
             return None
 
     # --------------------------------------------------------------
@@ -167,8 +167,8 @@ class TournamentView:
             try:
                 indexes = [int(x.strip()) - 1 for x in raw.split(",")]
                 selected = [players[i] for i in indexes]
-            except:
-                console.print("[red]Format invalide.[/red]")
+            except Exception as e:
+                console.print(f"[red]Erreur : {e}[/red]")
                 continue
 
             recap = "\n".join(

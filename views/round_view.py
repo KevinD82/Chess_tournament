@@ -42,7 +42,7 @@ class RoundView:
                 if s1 in (0, 0.5, 1) and s2 in (0, 0.5, 1):
                     return s1, s2
 
-            except:
+            except ValueError:
                 pass
 
             console.print("[red]Score invalide. Veuillez entrer 0, 0.5 ou 1.[/red]")

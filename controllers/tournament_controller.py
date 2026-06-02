@@ -1,20 +1,20 @@
 # controllers/tournament_controller.py
 
+from rich.console import Console
+from rich.panel import Panel
+
 from models.tournament import Tournament
 from models.round import Round
 from models.match import Match
-from database import tournaments_table, TournamentQuery
+from controllers.player_controller import PlayerController
 from views.tournament_view import TournamentView
 from views.round_view import RoundView
-from controllers.player_controller import PlayerController
-from rich.console import Console
-from rich.panel import Panel
+from database import tournaments_table, TournamentQuery
 
 console = Console()
 
 
 class TournamentController:
-
     def __init__(self):
         self.view = TournamentView()
         self.round_view = RoundView()
@@ -42,32 +42,27 @@ class TournamentController:
     # Liste des tournois
     # --------------------------------------------------------------
     def list_tournaments(self):
-        tournaments = [
-            Tournament.from_dict(t) for t in tournaments_table.all()
-        ]
+        tournaments = [Tournament.from_dict(t) for t in tournaments_table.all()]
         self.view.show_tournaments(tournaments)
 
     # --------------------------------------------------------------
     # Suppression d’un tournoi
     # --------------------------------------------------------------
     def delete_tournament(self):
-        tournaments = [
-            Tournament.from_dict(t) for t in tournaments_table.all()
-        ]
+        tournaments = [Tournament.from_dict(t) for t in tournaments_table.all()]
 
         if not tournaments:
             console.print("[yellow]Aucun tournoi à supprimer.[/yellow]")
             return
 
         self.view.show_tournaments(tournaments)
-
         choice = console.input("Numéro du tournoi à supprimer : ")
 
         try:
             index = int(choice) - 1
             tournament = tournaments[index]
-        except:
-            console.print("[red]Choix invalide.[/red]")
+        except (ValueError, IndexError) as e:
+            console.print(f"[red]Choix invalide : {e}[/red]")
             return
 
         confirm = console.input(
@@ -85,11 +80,9 @@ class TournamentController:
     # Menu de gestion d’un tournoi
     # --------------------------------------------------------------
     def manage_tournament(self):
-        tournaments = [
-            Tournament.from_dict(t) for t in tournaments_table.all()
-        ]
-
+        tournaments = [Tournament.from_dict(t) for t in tournaments_table.all()]
         tournament = self.view.select_tournament(tournaments)
+
         if not tournament:
             return
 
@@ -120,6 +113,9 @@ class TournamentController:
                 self._save_tournament(tournament)
                 return
 
+            else:
+                console.print("[red]Choix invalide.[/red]")
+
     # --------------------------------------------------------------
     # Ajout des joueurs
     # --------------------------------------------------------------
@@ -139,7 +135,7 @@ class TournamentController:
         console.print("[green]Joueurs ajoutés au tournoi ![/green]")
 
     # --------------------------------------------------------------
-    # Round Robin — génère des IDs, pas des objets Player
+    # Round Robin — génère des IDs
     # --------------------------------------------------------------
     def generate_round_robin_pairs(self, players):
         players = players[:]  # copie
@@ -150,7 +146,7 @@ class TournamentController:
         n = len(players)
         rounds = []
 
-        for r in range(n - 1):
+        for _ in range(n - 1):
             round_pairs = []
 
             for i in range(n // 2):
@@ -181,7 +177,6 @@ class TournamentController:
             return
 
         pairs = tournament.generated_rounds[tournament.current_round_index]
-
         round_name = f"Round {tournament.current_round_index + 1}"
         new_round = Round(round_name)
 
