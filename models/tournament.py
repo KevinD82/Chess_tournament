@@ -2,12 +2,7 @@
 
 from models.round import Round
 
-
 class Tournament:
-    """
-    Modèle représentant un tournoi d'échecs.
-    Stocke uniquement les IDs des joueurs (national_id) pour éviter les doublons.
-    """
 
     def __init__(self, name, location, start_date, end_date, description):
         self.name = name
@@ -16,15 +11,15 @@ class Tournament:
         self.end_date = end_date
         self.description = description
 
-        # Liste des IDs des joueurs
-        self.players = []
+        self.players = []          # objets Player (non sauvegardés)
+        self.players_ids = []      # IDs des joueurs
 
-        # Liste des rounds (objets Round)
-        self.rounds = []
+        self.rounds = []           # objets Round
+        self.generated_rounds = [] # liste de paires d'IDs
+        self.current_round_index = 0
 
-    # --------------------------------------------------------------
-    # Conversion → dictionnaire pour TinyDB
-    # --------------------------------------------------------------
+        self.final_ranking = []    # [(player_id, score), ...]
+
     def to_dict(self):
         return {
             "name": self.name,
@@ -32,20 +27,16 @@ class Tournament:
             "start_date": self.start_date,
             "end_date": self.end_date,
             "description": self.description,
-            "players": self.players,  # liste d'IDs
+            "players_ids": self.players_ids,
             "rounds": [r.to_dict() for r in self.rounds],
+            "generated_rounds": self.generated_rounds,  # déjà IDs
+            "current_round_index": self.current_round_index,
+            "final_ranking": self.final_ranking,
         }
 
-    # --------------------------------------------------------------
-    # Reconstruction depuis TinyDB
-    # --------------------------------------------------------------
     @classmethod
     def from_dict(cls, data):
-        """
-        Reconstruit un tournoi depuis TinyDB.
-        Aucun players_lookup n'est nécessaire.
-        """
-        tournament = cls(
+        t = cls(
             name=data["name"],
             location=data["location"],
             start_date=data["start_date"],
@@ -53,12 +44,11 @@ class Tournament:
             description=data["description"],
         )
 
-        # Liste des IDs des joueurs
-        tournament.players = data.get("players", [])
+        t.players_ids = data.get("players_ids", [])
+        t.rounds = [Round.from_dict(r) for r in data.get("rounds", [])]
 
-        # Reconstruction des rounds
-        tournament.rounds = [
-            Round.from_dict(r) for r in data.get("rounds", [])
-        ]
+        t.generated_rounds = data.get("generated_rounds", [])
+        t.current_round_index = data.get("current_round_index", 0)
+        t.final_ranking = data.get("final_ranking", [])
 
-        return tournament
+        return t

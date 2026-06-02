@@ -13,8 +13,8 @@ class Match:
 
     def to_dict(self):
         return {
-            "player1": self.player1,   # string
-            "player2": self.player2,   # string
+            "player1": self.player1,
+            "player2": self.player2,
             "score1": self.score1,
             "score2": self.score2,
         }

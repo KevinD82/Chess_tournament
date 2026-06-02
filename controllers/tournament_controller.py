@@ -3,23 +3,17 @@
 from models.tournament import Tournament
 from models.round import Round
 from models.match import Match
-from models.player import Player
-
 from database import tournaments_table, TournamentQuery
 from views.tournament_view import TournamentView
 from views.round_view import RoundView
+from controllers.player_controller import PlayerController
 from rich.console import Console
+from rich.panel import Panel
 
 console = Console()
 
 
 class TournamentController:
-    """
-    Contrôleur responsable de :
-    - créer un tournoi
-    - lister les tournois
-    - gérer un tournoi (rounds, matchs, scores)
-    """
 
     def __init__(self):
         self.view = TournamentView()
@@ -30,65 +24,85 @@ class TournamentController:
     # --------------------------------------------------------------
     def create_tournament(self):
         data = self.view.ask_tournament_info()
-        if data is None:
+        if not data:
             return
 
-        tournament = Tournament(**data)
-        tournaments_table.insert(tournament.to_dict())
+        tournament = Tournament(
+            name=data["name"],
+            location=data["location"],
+            start_date=data["start_date"],
+            end_date=data["end_date"],
+            description=data["description"],
+        )
 
-        console.print(f"[green]Tournoi '{tournament.name}' créé avec succès ![/green]")
+        tournaments_table.insert(tournament.to_dict())
+        console.print("[green]Tournoi créé avec succès ![/green]")
 
     # --------------------------------------------------------------
     # Liste des tournois
     # --------------------------------------------------------------
     def list_tournaments(self):
-        records = tournaments_table.all()
-        tournaments = [Tournament.from_dict(r) for r in records]
-
-        if not tournaments:
-            console.print("[red]Aucun tournoi enregistré.[/red]")
-            return
-
-        for t in tournaments:
-            console.print(f"- {t.name} ({t.location}) du {t.start_date} au {t.end_date}")
+        tournaments = [
+            Tournament.from_dict(t) for t in tournaments_table.all()
+        ]
+        self.view.show_tournaments(tournaments)
 
     # --------------------------------------------------------------
-    # Gestion d’un tournoi
+    # Suppression d’un tournoi
     # --------------------------------------------------------------
-    def manage_tournament(self):
-        records = tournaments_table.all()
-        tournaments = [Tournament.from_dict(r) for r in records]
+    def delete_tournament(self):
+        tournaments = [
+            Tournament.from_dict(t) for t in tournaments_table.all()
+        ]
 
         if not tournaments:
-            console.print("[red]Aucun tournoi disponible.[/red]")
+            console.print("[yellow]Aucun tournoi à supprimer.[/yellow]")
             return
 
-        # Affichage numéroté
-        for i, t in enumerate(tournaments, start=1):
-            console.print(f"{i}. {t.name} ({t.location})")
+        self.view.show_tournaments(tournaments)
 
-        raw = console.input("Numéro du tournoi à gérer : ")
+        choice = console.input("Numéro du tournoi à supprimer : ")
+
         try:
-            index = int(raw) - 1
+            index = int(choice) - 1
             tournament = tournaments[index]
         except:
-            console.print("[red]Numéro invalide.[/red]")
+            console.print("[red]Choix invalide.[/red]")
             return
+
+        confirm = console.input(
+            f"Supprimer le tournoi '{tournament.name}' ? (o/N) : "
+        ).lower()
+
+        if confirm != "o":
+            console.print("[yellow]Suppression annulée.[/yellow]")
+            return
+
+        tournaments_table.remove(TournamentQuery.name == tournament.name)
+        console.print(f"[green]Tournoi '{tournament.name}' supprimé avec succès ![/green]")
+
+    # --------------------------------------------------------------
+    # Menu de gestion d’un tournoi
+    # --------------------------------------------------------------
+    def manage_tournament(self):
+        tournaments = [
+            Tournament.from_dict(t) for t in tournaments_table.all()
+        ]
+
+        tournament = self.view.select_tournament(tournaments)
+        if not tournament:
+            return
+
+        all_players = PlayerController().get_all_players()
+        tournament.players = [
+            p for p in all_players if p.national_id in tournament.players_ids
+        ]
 
         self.manage_selected_tournament(tournament)
 
-    # --------------------------------------------------------------
-    # Menu interne d’un tournoi
-    # --------------------------------------------------------------
     def manage_selected_tournament(self, tournament):
         while True:
-            console.print(f"\n[bold cyan]Gestion du tournoi : {tournament.name}[/bold cyan]")
-            console.print("1. Ajouter des joueurs")
-            console.print("2. Lancer un round")
-            console.print("3. Voir les rounds")
-            console.print("0. Retour\n")
-
-            choice = console.input("Votre choix : ")
+            choice = self.view.manage_menu(tournament)
 
             if choice == "1":
                 self.add_players_to_tournament(tournament)
@@ -97,76 +111,140 @@ class TournamentController:
                 self.start_round(tournament)
 
             elif choice == "3":
-                self.show_rounds(tournament)
+                self.view.show_rounds(tournament)
+
+            elif choice == "4":
+                self.show_final_ranking(tournament)
 
             elif choice == "0":
+                self._save_tournament(tournament)
                 return
 
     # --------------------------------------------------------------
-    # Ajouter des joueurs
+    # Ajout des joueurs
     # --------------------------------------------------------------
     def add_players_to_tournament(self, tournament):
-        from database import players_table
-        players = [Player.from_dict(r) for r in players_table.all()]
-
+        players = PlayerController().get_all_players()
         selected = self.view.select_players(players)
-        if selected is None:
+
+        if not selected:
             return
 
-        tournament.players = [p.national_id for p in selected]
-        self._save_tournament(tournament)
+        for p in selected:
+            if p.national_id not in tournament.players_ids:
+                tournament.players.append(p)
+                tournament.players_ids.append(p.national_id)
 
+        self._save_tournament(tournament)
         console.print("[green]Joueurs ajoutés au tournoi ![/green]")
+
+    # --------------------------------------------------------------
+    # Round Robin — génère des IDs, pas des objets Player
+    # --------------------------------------------------------------
+    def generate_round_robin_pairs(self, players):
+        players = players[:]  # copie
+
+        if len(players) % 2 == 1:
+            players.append(None)
+
+        n = len(players)
+        rounds = []
+
+        for r in range(n - 1):
+            round_pairs = []
+
+            for i in range(n // 2):
+                p1 = players[i]
+                p2 = players[n - 1 - i]
+
+                if p1 and p2:
+                    round_pairs.append((p1.national_id, p2.national_id))
+
+            players = [players[0]] + [players[-1]] + players[1:-1]
+            rounds.append(round_pairs)
+
+        return rounds
 
     # --------------------------------------------------------------
     # Lancer un round
     # --------------------------------------------------------------
     def start_round(self, tournament):
-        if not tournament.players:
-            console.print("[red]Aucun joueur dans ce tournoi.[/red]")
+
+        if not tournament.generated_rounds:
+            tournament.generated_rounds = self.generate_round_robin_pairs(
+                tournament.players
+            )
+            tournament.current_round_index = 0
+
+        if tournament.current_round_index >= len(tournament.generated_rounds):
+            console.print("[yellow]Tous les rounds ont déjà été joués.[/yellow]")
             return
 
-        round_number = len(tournament.rounds) + 1
-        round_obj = Round(name=f"Round {round_number}")
+        pairs = tournament.generated_rounds[tournament.current_round_index]
 
-        # Création des matchs (pairing simple)
-        players = tournament.players.copy()
-        if len(players) % 2 != 0:
-            console.print("[red]Nombre impair de joueurs ![/red]")
-            return
+        round_name = f"Round {tournament.current_round_index + 1}"
+        new_round = Round(round_name)
 
-        matches = []
-        for i in range(0, len(players), 2):
-            p1 = players[i]
-            p2 = players[i + 1]
-            matches.append(Match(player1=p1, player2=p2))
+        for pid1, pid2 in pairs:
+            match = Match(pid1, pid2)
+            new_round.matches.append(match)
 
-        round_obj.matches = matches
+        tournament.rounds.append(new_round)
+        tournament.current_round_index += 1
 
-        # Saisie des scores
-        for match in round_obj.matches:
-            score = self.round_view.ask_match_result(match)
-            if score is None:
-                return
-            match.score1, match.score2 = score
+        self._save_tournament(tournament)
+        self.round_view.round_started(new_round)
 
-        tournament.rounds.append(round_obj)
+        for match in new_round.matches:
+            s1, s2 = self.round_view.ask_match_result(match)
+            match.score1 = s1
+            match.score2 = s2
+
         self._save_tournament(tournament)
 
-        console.print("[green]Round terminé et enregistré ![/green]")
+        if tournament.current_round_index == len(tournament.generated_rounds):
+            self.compute_final_ranking(tournament)
+
+        console.print("[green]Round terminé ![/green]")
 
     # --------------------------------------------------------------
-    # Affichage des rounds
+    # Calcul du classement final
     # --------------------------------------------------------------
-    def show_rounds(self, tournament):
-        if not tournament.rounds:
-            console.print("[yellow]Aucun round enregistré.[/yellow]")
-            return
+    def compute_final_ranking(self, tournament):
+
+        scores = {pid: 0 for pid in tournament.players_ids}
 
         for r in tournament.rounds:
-            console.print(f"[cyan]{r.name}[/cyan]")
             for m in r.matches:
-                console.print(f"- {m.player1} {m.score1} vs {m.player2} {m.score2}")
+                scores[m.player1] += m.score1
+                scores[m.player2] += m.score2
+
+        ranking = sorted(scores.items(), key=lambda x: x[1], reverse=True)
+        tournament.final_ranking = ranking
+
+        self._save_tournament(tournament)
+        self.show_final_ranking(tournament)
+
+    # --------------------------------------------------------------
+    # Affichage du classement final
+    # --------------------------------------------------------------
+    def show_final_ranking(self, tournament):
+
+        if not tournament.final_ranking:
+            console.print("[yellow]Le classement final n'est pas encore disponible.[/yellow]")
+            return
+
+        all_players = PlayerController().get_all_players()
+        lookup = {p.national_id: p for p in all_players}
+
+        text = "[bold cyan]Classement final[/bold cyan]\n\n"
+
+        for i, (pid, score) in enumerate(tournament.final_ranking, start=1):
+            p = lookup.get(pid)
+            if p:
+                text += f"{i}. {p.first_name} {p.last_name} ({pid}) — {score} pts\n"
+
+        console.print(Panel.fit(text))
 
     # --------------------------------------------------------------
     # Sauvegarde

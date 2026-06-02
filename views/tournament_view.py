@@ -10,7 +10,7 @@ console = Console()
 class TournamentView:
 
     # --------------------------------------------------------------
-    # Saisie sécurisée (annulation possible)
+    # Saisie sécurisée
     # --------------------------------------------------------------
     def safe_input(self, message):
         value = console.input(message)
@@ -20,15 +20,9 @@ class TournamentView:
         return value
 
     # --------------------------------------------------------------
-    # Saisie intelligente d’un tournoi
+    # Création d’un tournoi
     # --------------------------------------------------------------
     def ask_tournament_info(self):
-        """
-        Saisie simple :
-        - Entrée valide
-        - Entrée vide = revenir au champ précédent
-        """
-
         fields = [
             ("Nom du tournoi", "name"),
             ("Lieu", "location"),
@@ -52,7 +46,6 @@ class TournamentView:
 
             value = console.input(f"{label} : ")
 
-            # Retour arrière
             if value.strip() == "":
                 if index > 0:
                     index -= 1
@@ -60,7 +53,6 @@ class TournamentView:
                 console.print("[yellow]Déjà au premier champ.[/yellow]")
                 continue
 
-            # Formatage automatique des dates
             if key in ("start_date", "end_date"):
                 digits = "".join(c for c in value if c.isdigit())
                 if len(digits) != 8:
@@ -71,7 +63,6 @@ class TournamentView:
             data[key] = value
             index += 1
 
-        # Récapitulatif
         console.print(Panel.fit(
             f"[bold cyan]Vérification du tournoi[/bold cyan]\n\n"
             f"Nom : {data['name']}\n"
@@ -89,14 +80,68 @@ class TournamentView:
         return None
 
     # --------------------------------------------------------------
-    # Sélection des joueurs pour un tournoi
+    # Affichage des tournois
+    # --------------------------------------------------------------
+    def show_tournaments(self, tournaments):
+        table = Table(title="Liste des tournois")
+
+        table.add_column("N°", style="yellow")
+        table.add_column("Nom", style="cyan")
+        table.add_column("Lieu", style="cyan")
+        table.add_column("Dates", style="magenta")
+
+        for i, t in enumerate(tournaments, start=1):
+            table.add_row(
+                str(i),
+                t.name,
+                t.location,
+                f"{t.start_date} → {t.end_date}"
+            )
+
+        console.print(table)
+
+    # --------------------------------------------------------------
+    # Sélection d’un tournoi
+    # --------------------------------------------------------------
+    def select_tournament(self, tournaments):
+        if not tournaments:
+            console.print("[red]Aucun tournoi disponible.[/red]")
+            return None
+
+        self.show_tournaments(tournaments)
+
+        choice = console.input("Numéro du tournoi (Entrée vide = annuler) : ")
+
+        if choice.strip() == "":
+            console.print("[yellow]Sélection annulée.[/yellow]")
+            return None
+
+        try:
+            index = int(choice) - 1
+            return tournaments[index]
+        except:
+            console.print("[red]Choix invalide.[/red]")
+            return None
+
+    # --------------------------------------------------------------
+    # Menu de gestion d’un tournoi
+    # --------------------------------------------------------------
+    def manage_menu(self, tournament):
+        console.print(Panel.fit(
+            f"[bold cyan]=== Gestion du tournoi : {tournament.name} ===[/bold cyan]\n\n"
+            "1. Ajouter des joueurs\n"
+            "2. Lancer un round\n"
+            "3. Voir les rounds\n"
+            "4. Voir le classement final\n"
+            "0. Retour"
+        ))
+
+        return console.input("Votre choix : ")
+
+    # --------------------------------------------------------------
+    # Sélection des joueurs
     # --------------------------------------------------------------
     def select_players(self, players):
-        """
-        Affiche la liste des joueurs et permet d'en sélectionner plusieurs.
-        Entrée vide = annuler
-        """
-
         while True:
             console.print(Panel.fit("[bold cyan]Sélection des joueurs[/bold cyan]"))
 
@@ -115,7 +160,6 @@ class TournamentView:
                 "[yellow]Numéros des joueurs (ex: 1,3,5) — Entrée vide = annuler : [/yellow]"
             )
 
-            # Annulation
             if raw.strip() == "":
                 console.print("[yellow]Sélection annulée.[/yellow]")
                 return None
@@ -123,11 +167,10 @@ class TournamentView:
             try:
                 indexes = [int(x.strip()) - 1 for x in raw.split(",")]
                 selected = [players[i] for i in indexes]
-            except Exception:
+            except:
                 console.print("[red]Format invalide.[/red]")
                 continue
 
-            # Récapitulatif
             recap = "\n".join(
                 f"- {p.first_name} {p.last_name} ({p.national_id})"
                 for p in selected
@@ -140,3 +183,16 @@ class TournamentView:
             confirm = console.input("Valider ? (o/N) : ").lower()
             if confirm == "o":
                 return selected
+
+    # --------------------------------------------------------------
+    # Affichage des rounds
+    # --------------------------------------------------------------
+    def show_rounds(self, tournament):
+        if not tournament.rounds:
+            console.print("[yellow]Aucun round joué pour le moment.[/yellow]")
+            return
+
+        for r in tournament.rounds:
+            console.print(Panel.fit(f"[cyan]{r.name}[/cyan]"))
+            for m in r.matches:
+                console.print(f"{m.player1} vs {m.player2} → {m.score1} / {m.score2}")

@@ -19,9 +19,6 @@ class Round:
 
     @classmethod
     def from_dict(cls, data):
-        """
-        Version simple : aucun players_lookup nécessaire.
-        """
         round_obj = cls(name=data["name"])
         round_obj.matches = [Match.from_dict(m) for m in data.get("matches", [])]
         return round_obj
