@@ -111,3 +111,28 @@ class PlayerView:
             )
 
         console.print(table)
+
+    # --------------------------------------------------------------
+    # Confirmation de création d'un joueur
+    # --------------------------------------------------------------
+    def confirm_player_created(self, player):
+        console.print(
+            Panel.fit(
+                f"[green]Joueur créé avec succès ![/green]\n\n"
+                f"{player.first_name} {player.last_name}\n"
+                f"ID : {player.national_id}\n"
+                f"Date de naissance : {player.birthdate}"
+            )
+        )
+
+    # --------------------------------------------------------------
+    # Confirmation de suppression d'un joueur
+    # --------------------------------------------------------------
+    def confirm_player_deleted(self, player):
+        console.print(
+            Panel.fit(
+                f"[red]Joueur supprimé[/red]\n\n"
+                f"{player.first_name} {player.last_name}\n"
+                f"ID : {player.national_id}"
+            )
+        )
