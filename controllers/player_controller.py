@@ -1,26 +1,14 @@
 # controllers/player_controller.py
 
 from models.player import Player
-from database import players_table, PlayerQuery
+from database import players_table
 from views.player_view import PlayerView
-from rich.console import Console
-
-console = Console()
+from tinydb import where
 
 
 class PlayerController:
-
     def __init__(self):
         self.view = PlayerView()
-
-    # --------------------------------------------------------------
-    # Récupération de tous les joueurs (objets Player)
-    # --------------------------------------------------------------
-    def get_all_players(self):
-        players = []
-        for data in players_table.all():
-            players.append(Player.from_dict(data))
-        return players
 
     # --------------------------------------------------------------
     # Création d’un joueur
@@ -30,48 +18,50 @@ class PlayerController:
         if not data:
             return
 
-        player = Player(
-            last_name=data["last_name"],
-            first_name=data["first_name"],
-            birthdate=data["birthdate"],
-            national_id=data["national_id"],
-        )
-
+        player = Player(**data)
         players_table.insert(player.to_dict())
-        self.view.confirm_player_created(player)
 
     # --------------------------------------------------------------
-    # Liste des joueurs
+    # Affichage des joueurs
     # --------------------------------------------------------------
     def list_players(self):
-        players = self.get_all_players()
-        if not players:
-            console.print("[yellow]Aucun joueur enregistré.[/yellow]")
-            return
-
+        players = [Player.from_dict(p) for p in players_table.all()]
         self.view.show_players(players)
 
     # --------------------------------------------------------------
-    # Suppression d’un joueur
+    # Suppression d’un joueur (simple et robuste)
     # --------------------------------------------------------------
     def delete_player(self):
-        players = self.get_all_players()
+        players = [Player.from_dict(p) for p in players_table.all()]
+
         if not players:
-            console.print("[yellow]Aucun joueur à supprimer.[/yellow]")
+            print("[yellow]Aucun joueur enregistré.[/yellow]")
             return
 
+        # Afficher la liste avec numéros
         self.view.show_players(players)
 
-        choice = console.input("Numéro du joueur à supprimer : ")
+        while True:
+            choice = input("Numéro du joueur à supprimer (Entrée vide = annuler) : ").strip()
 
-        try:
+            if choice == "":
+                print("[yellow]Suppression annulée.[/yellow]")
+                return
+
+            if not choice.isdigit():
+                print("[red]Veuillez entrer un numéro valide.[/red]")
+                continue
+
             index = int(choice) - 1
+
+            if index < 0 or index >= len(players):
+                print("[red]Numéro hors liste.[/red]")
+                continue
+
             player = players[index]
-        except Exception as e:
-            console.print(f"[red]Erreur : {e}[/red]")
-            return
+            break
 
         # Suppression dans TinyDB
-        players_table.remove(PlayerQuery.national_id == player.national_id)
+        players_table.remove(where("national_id") == player.national_id)
 
-        self.view.confirm_player_deleted(player)
+        print(f"[green]Joueur {player.first_name} {player.last_name} supprimé.[/green]")

@@ -3,13 +3,18 @@
 class Player:
     """
     Modèle représentant un joueur d'échecs.
-    Ce modèle est simple mais essentiel : il sert dans
+    Ce modèle sert dans
     - la création de joueurs
     - les tournois
     - les rounds
     - les rapports
 
-    Il est compatible avec TinyDB grâce aux méthodes to_dict() et from_dict().
+    Il contient les informations de base d'un joueur :
+    - nom de famille
+    - prénom
+    - date de naissance
+    - identifiant national
+    - score (cumulé dans un tournoi)
     """
 
     def __init__(self, last_name, first_name, birthdate, national_id, score=0):
@@ -29,14 +34,12 @@ class Player:
         self.score = score
 
     # ----------------------------------------------------------------------
-    # Sérialisation pour TinyDB
+    # Sérialisation
     # ----------------------------------------------------------------------
     def to_dict(self):
         """
-        Convertit l'objet Player en dictionnaire pour stockage dans TinyDB.
-
-        TinyDB ne peut pas stocker directement des objets Python,
-        donc on convertit tout en types simples (str, int…).
+        Convertit l'objet en dictionnaire pour stockage dans TinyDB.
+        
         """
         return {
             "last_name": self.last_name,
@@ -49,11 +52,8 @@ class Player:
     @classmethod
     def from_dict(cls, data):
         """
-        Recrée un objet Player à partir d'un dictionnaire TinyDB.
-
-        data : dict contenant les champs du joueur
-        score : récupéré via data.get() pour éviter une erreur
-                si l'ancien format n'avait pas de score.
+        Recrée un objet à partir d'un dictionnaire TinyDB.
+        
         """
         return cls(
             last_name=data["last_name"],
@@ -69,7 +69,8 @@ class Player:
     def add_points(self, points):
         """
         Ajoute des points au joueur après un match.
-        Utilisé dans la logique de calcul des scores d'un tournoi.
+            points : nombre de points à ajouter (1 pour victoire, 0.5 pour nul, 0 pour défaite)
+            
         """
         self.score += points
 
