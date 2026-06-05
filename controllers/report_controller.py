@@ -2,18 +2,14 @@
 
 from rich.console import Console
 from rich.panel import Panel
-from models.player import Player
 from models.tournament import Tournament
-from database import tournaments_table, players_table
+from database import tournaments_table
 
 console = Console()
 
 
 class ReportController:
 
-    # --------------------------------------------------------------
-    # Liste des tournois
-    # --------------------------------------------------------------
     def list_tournaments(self):
         tournaments = [Tournament.from_dict(t) for t in tournaments_table.all()]
 
@@ -26,9 +22,6 @@ class ReportController:
         for i, t in enumerate(tournaments, start=1):
             console.print(f"{i}. {t.name} ({t.location}) — {t.start_date} → {t.end_date}")
 
-    # --------------------------------------------------------------
-    # Détails d’un tournoi
-    # --------------------------------------------------------------
     def tournament_details(self):
         tournaments = [Tournament.from_dict(t) for t in tournaments_table.all()]
 
@@ -61,13 +54,11 @@ class ReportController:
             console.print("[yellow]Aucun round enregistré pour ce tournoi.[/yellow]")
             return
 
-        # Affichage des rounds et matchs
         for i, rnd in enumerate(tournament.rounds, start=1):
             console.print(f"\n[bold]Round {i}[/bold]")
             for match in rnd:
                 console.print(f"{match['p1']} ({match['s1']}) vs {match['p2']} ({match['s2']})")
 
-        # Affichage du classement final
         if tournament.results:
             console.print("\n[bold green]=== Classement final ===[/bold green]")
             for pos, (player, score) in enumerate(tournament.results, start=1):

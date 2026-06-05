@@ -9,8 +9,8 @@ class Tournament:
         self.end_date = end_date
         self.description = description
         self.players = players or []
-        self.rounds = rounds or []
-        self.results = results or {}
+        self.rounds = rounds or []   # LISTE DES ROUNDS
+        self.results = results or [] # CLASSEMENT FINAL
 
     def to_dict(self):
         return {
@@ -34,5 +34,5 @@ class Tournament:
             description=data["description"],
             players=data.get("players", []),
             rounds=data.get("rounds", []),
-            results=data.get("results", {}),
+            results=data.get("results", []),
         )

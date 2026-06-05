@@ -62,14 +62,27 @@ class TournamentController:
         ]
 
         scores = {p: 0 for p in players}
+        tournament.rounds = []  # IMPORTANT
 
         for i, matches in enumerate(rounds, start=1):
             self.view.show_round(i, [{"p1": m[0], "p2": m[1]} for m in matches])
 
+            round_data = []
+
             for p1, p2 in matches:
                 s1, s2 = self.view.ask_score(p1, p2)
+
                 scores[p1] += s1
                 scores[p2] += s2
+
+                round_data.append({
+                    "p1": p1,
+                    "p2": p2,
+                    "s1": s1,
+                    "s2": s2
+                })
+
+            tournament.rounds.append(round_data)
 
         # Classement final
         sorted_results = sorted(scores.items(), key=lambda x: x[1], reverse=True)
@@ -92,14 +105,10 @@ class TournamentController:
 
         self.view.show_tournaments(tournaments)
 
-        choice = input("Numéro du tournoi à supprimer (Entrée vide = annuler) : ").strip()
-
-        if choice == "":
-            console.print("[yellow]Suppression annulée.[/yellow]")
-            return
+        choice = input("Numéro du tournoi à supprimer : ").strip()
 
         if not choice.isdigit():
-            console.print("[red]Veuillez entrer un numéro valide.[/red]")
+            console.print("[red]Choix invalide.[/red]")
             return
 
         index = int(choice) - 1
