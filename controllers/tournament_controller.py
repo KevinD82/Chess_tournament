@@ -40,14 +40,36 @@ class TournamentController:
     # --------------------------------------------------------------
     def manage_tournament(self):
         tournaments = [Tournament.from_dict(t) for t in tournaments_table.all()]
-        self.view.show_tournaments(tournaments)
 
-        choice = input("Numéro du tournoi à gérer : ").strip()
-        if not choice.isdigit():
-            console.print("[red]Choix invalide.[/red]")
+        if not tournaments:
+            console.print("[yellow]Aucun tournoi enregistré.[/yellow]")
             return
 
-        tournament = tournaments[int(choice) - 1]
+        # Affichage de la liste
+        self.view.show_tournaments(tournaments)
+
+        # Sélection sécurisée du tournoi
+        while True:
+            choice = console.input(
+                "Numéro du tournoi à gérer (Entrée vide = annuler) : "
+            ).strip()
+
+            if choice == "":
+                console.print("[yellow]Gestion annulée.[/yellow]")
+                return
+
+            if not choice.isdigit():
+                console.print("[red]Veuillez entrer un numéro valide.[/red]")
+                continue
+
+            index = int(choice) - 1
+
+            if index < 0 or index >= len(tournaments):
+                console.print("[red]Numéro hors liste.[/red]")
+                continue
+
+            tournament = tournaments[index]
+            break
 
         players = tournament.players
         if len(players) < 4:
@@ -105,19 +127,27 @@ class TournamentController:
 
         self.view.show_tournaments(tournaments)
 
-        choice = input("Numéro du tournoi à supprimer : ").strip()
+        while True:
+            choice = console.input(
+                "Numéro du tournoi à supprimer (Entrée vide = annuler) : "
+            ).strip()
 
-        if not choice.isdigit():
-            console.print("[red]Choix invalide.[/red]")
-            return
+            if choice == "":
+                console.print("[yellow]Suppression annulée.[/yellow]")
+                return
 
-        index = int(choice) - 1
+            if not choice.isdigit():
+                console.print("[red]Veuillez entrer un numéro valide.[/red]")
+                continue
 
-        if index < 0 or index >= len(tournaments):
-            console.print("[red]Numéro hors liste.[/red]")
-            return
+            index = int(choice) - 1
 
-        tournament = tournaments[index]
+            if index < 0 or index >= len(tournaments):
+                console.print("[red]Numéro hors liste.[/red]")
+                continue
+
+            tournament = tournaments[index]
+            break
 
         tournaments_table.remove(where("name") == tournament.name)
 

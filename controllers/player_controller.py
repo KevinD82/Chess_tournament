@@ -4,6 +4,9 @@ from models.player import Player
 from database import players_table
 from views.player_view import PlayerView
 from tinydb import where
+from rich.console import Console
+
+console = Console()
 
 
 class PlayerController:
@@ -35,27 +38,27 @@ class PlayerController:
         players = [Player.from_dict(p) for p in players_table.all()]
 
         if not players:
-            print("[yellow]Aucun joueur enregistré.[/yellow]")
+            console.print("[yellow]Aucun joueur enregistré.[/yellow]")
             return
 
         # Afficher la liste avec numéros
         self.view.show_players(players)
 
         while True:
-            choice = input("Numéro du joueur à supprimer (Entrée vide = annuler) : ").strip()
+            choice = console.input("Numéro du joueur à supprimer (Entrée vide = annuler) : ").strip()
 
             if choice == "":
-                print("[yellow]Suppression annulée.[/yellow]")
+                console.print("[yellow]Suppression annulée.[/yellow]")
                 return
 
             if not choice.isdigit():
-                print("[red]Veuillez entrer un numéro valide.[/red]")
+                console.print("[red]Veuillez entrer un numéro valide.[/red]")
                 continue
 
             index = int(choice) - 1
 
             if index < 0 or index >= len(players):
-                print("[red]Numéro hors liste.[/red]")
+                console.print("[red]Numéro hors liste.[/red]")
                 continue
 
             player = players[index]
@@ -64,4 +67,4 @@ class PlayerController:
         # Suppression dans TinyDB
         players_table.remove(where("national_id") == player.national_id)
 
-        print(f"[green]Joueur {player.first_name} {player.last_name} supprimé.[/green]")
+        console.print(f"[green]Joueur {player.first_name} {player.last_name} supprimé.[/green]")

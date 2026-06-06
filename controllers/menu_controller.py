@@ -22,15 +22,14 @@ class MenuController:
     # --------------------------------------------------------------
     def run(self):
         while True:
-            console.print(Panel.fit(
-                "=== MENU PRINCIPAL ===\n\n"
-                "1. Gestion des joueurs\n"
-                "2. Gestion des tournois\n"
-                "3. Rapports\n"
-                "0. Quitter"
-            ))
+            console.print(Panel.fit("[bold cyan]=== MENU PRINCIPAL ===[/bold cyan]"))
 
-            choice = input("Votre choix : ").strip()
+            console.print("1. Gestion des joueurs")
+            console.print("2. Gestion des tournois")
+            console.print("3. Rapports")
+            console.print("0. Quitter\n")
+
+            choice = console.input("[bold yellow]Votre choix : [/bold yellow]").strip()
 
             if choice == "1":
                 self.menu_players()
@@ -49,15 +48,14 @@ class MenuController:
     # --------------------------------------------------------------
     def menu_players(self):
         while True:
-            console.print(Panel.fit(
-                "=== GESTION DES JOUEURS ===\n\n"
-                "1. Ajouter un joueur\n"
-                "2. Liste des joueurs\n"
-                "3. Supprimer un joueur\n"
-                "0. Retour"
-            ))
+            console.print(Panel.fit("[bold cyan]=== GESTION DES JOUEURS ===[/bold cyan]"))
 
-            choice = input("Votre choix : ").strip()
+            console.print("1. Ajouter un joueur")
+            console.print("2. Liste des joueurs")
+            console.print("3. Supprimer un joueur")
+            console.print("0. Retour\n")
+
+            choice = console.input("[bold yellow]Votre choix : [/bold yellow]").strip()
 
             if choice == "1":
                 self.player_controller.create_player()
@@ -75,16 +73,15 @@ class MenuController:
     # --------------------------------------------------------------
     def menu_tournaments(self):
         while True:
-            console.print(Panel.fit(
-                "=== GESTION DES TOURNOIS ===\n\n"
-                "1. Créer un tournoi\n"
-                "2. Liste des tournois\n"
-                "3. Gérer un tournoi\n"
-                "4. Supprimer un tournoi\n"
-                "0. Retour"
-            ))
+            console.print(Panel.fit("[bold cyan]=== GESTION DES TOURNOIS ===[/bold cyan]"))
 
-            choice = input("Votre choix : ").strip()
+            console.print("1. Créer un tournoi")
+            console.print("2. Liste des tournois")
+            console.print("3. Gérer un tournoi")
+            console.print("4. Supprimer un tournoi")
+            console.print("0. Retour\n")
+
+            choice = console.input("[bold yellow]Votre choix : [/bold yellow]").strip()
 
             if choice == "1":
                 self.tournament_controller.create_tournament()
@@ -104,14 +101,13 @@ class MenuController:
     # --------------------------------------------------------------
     def menu_reports(self):
         while True:
-            console.print(Panel.fit(
-                "=== RAPPORTS ===\n\n"
-                "1. Liste des tournois\n"
-                "2. Détails d’un tournoi\n"
-                "0. Retour"
-            ))
+            console.print(Panel.fit("[bold cyan]=== RAPPORTS ===[/bold cyan]"))
 
-            choice = input("Votre choix : ").strip()
+            console.print("1. Liste des tournois")
+            console.print("2. Détails d’un tournoi")
+            console.print("0. Retour\n")
+
+            choice = console.input("[bold yellow]Votre choix : [/bold yellow]").strip()
 
             if choice == "1":
                 self.report_controller.list_tournaments()
