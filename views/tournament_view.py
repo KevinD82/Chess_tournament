@@ -1,8 +1,8 @@
 # views/tournament_view.py
 
 from rich.console import Console
-from rich.table import Table
 from rich.panel import Panel
+from rich.table import Table
 
 console = Console()
 
@@ -14,8 +14,8 @@ class TournamentView:
 
         name = console.input("Nom du tournoi : ")
         location = console.input("Lieu : ")
-        start_date = console.input("Date de début : ")
-        end_date = console.input("Date de fin : ")
+        start_date = console.input("Date de début (JJ/MM/AAAA) : ")
+        end_date = console.input("Date de fin (JJ/MM/AAAA) : ")
         description = console.input("Description : ")
 
         return {
@@ -32,38 +32,40 @@ class TournamentView:
         table.add_column("N°", style="yellow")
         table.add_column("Nom", style="cyan")
         table.add_column("Lieu", style="cyan")
-        table.add_column("Dates", style="magenta")
+        table.add_column("Début", style="magenta")
+        table.add_column("Fin", style="magenta")
 
         for i, t in enumerate(tournaments, start=1):
-            table.add_row(
-                str(i),
-                t.name,
-                t.location,
-                f"{t.start_date} → {t.end_date}"
-            )
+            start = f"{t.start_date} {t.start_time}".strip()
+            end = f"{t.end_date} {t.end_time}".strip()
+            table.add_row(str(i), t.name, t.location, start, end)
 
         console.print(table)
 
     def show_round(self, round_number, matches):
-        console.print(f"\n[bold cyan]Round {round_number}[/bold cyan]")
+        console.print(Panel.fit(f"[bold cyan]Round {round_number}[/bold cyan]"))
         for m in matches:
-            console.print(f"- {m['p1']} vs {m['p2']}")
+            console.print(f"{m['p1']} vs {m['p2']}")
 
     def ask_score(self, p1, p2):
-        console.print(f"\n[bold yellow]{p1} vs {p2}[/bold yellow]")
-        s1 = float(console.input(f"Score {p1} : "))
-        s2 = float(console.input(f"Score {p2} : "))
-        return s1, s2
+        console.print(f"Score pour {p1} vs {p2} :")
+        while True:
+            try:
+                s1 = float(console.input(f"Score de {p1} : ").replace(",", "."))
+                s2 = float(console.input(f"Score de {p2} : ").replace(",", "."))
+                return s1, s2
+            except ValueError:
+                console.print("[red]Veuillez entrer un nombre valide (0, 0.5 ou 1).[/red]")
 
     def show_results(self, results):
-        console.print("\n[bold green]=== Classement final ===[/bold green]")
-        table = Table()
+        console.print(Panel.fit("[bold green]Résultats du tournoi[/bold green]"))
 
-        table.add_column("Position")
-        table.add_column("Joueur")
-        table.add_column("Points")
+        table = Table(title="Classement final")
+        table.add_column("Position", style="yellow")
+        table.add_column("Joueur", style="cyan")
+        table.add_column("Score", style="magenta")
 
-        for i, (player, score) in enumerate(results, start=1):
-            table.add_row(str(i), player, str(score))
+        for pos, (player, score) in enumerate(results, start=1):
+            table.add_row(str(pos), player, str(score))
 
         console.print(table)

@@ -17,9 +17,6 @@ class MenuController:
         self.tournament_controller = TournamentController()
         self.report_controller = ReportController()
 
-    # --------------------------------------------------------------
-    # Menu principal
-    # --------------------------------------------------------------
     def run(self):
         while True:
             console.print(Panel.fit("[bold cyan]=== MENU PRINCIPAL ===[/bold cyan]"))
@@ -43,9 +40,6 @@ class MenuController:
             else:
                 console.print("[red]Choix invalide.[/red]")
 
-    # --------------------------------------------------------------
-    # Menu joueurs
-    # --------------------------------------------------------------
     def menu_players(self):
         while True:
             console.print(Panel.fit("[bold cyan]=== GESTION DES JOUEURS ===[/bold cyan]"))
@@ -68,9 +62,6 @@ class MenuController:
             else:
                 console.print("[red]Choix invalide.[/red]")
 
-    # --------------------------------------------------------------
-    # Menu tournois
-    # --------------------------------------------------------------
     def menu_tournaments(self):
         while True:
             console.print(Panel.fit("[bold cyan]=== GESTION DES TOURNOIS ===[/bold cyan]"))
@@ -96,15 +87,13 @@ class MenuController:
             else:
                 console.print("[red]Choix invalide.[/red]")
 
-    # --------------------------------------------------------------
-    # Menu rapports
-    # --------------------------------------------------------------
     def menu_reports(self):
         while True:
             console.print(Panel.fit("[bold cyan]=== RAPPORTS ===[/bold cyan]"))
 
             console.print("1. Liste des tournois")
             console.print("2. Détails d’un tournoi")
+            console.print("3. Historique complet")
             console.print("0. Retour\n")
 
             choice = console.input("[bold yellow]Votre choix : [/bold yellow]").strip()
@@ -113,6 +102,8 @@ class MenuController:
                 self.report_controller.list_tournaments()
             elif choice == "2":
                 self.report_controller.tournament_details()
+            elif choice == "3":
+                self.report_controller.full_history()
             elif choice == "0":
                 return
             else:
