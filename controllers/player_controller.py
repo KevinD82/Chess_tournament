@@ -23,16 +23,36 @@ class PlayerController:
 
         player = Player(**data)
         players_table.insert(player.to_dict())
+        console.print("[green]Joueur créé avec succès ![/green]")
 
     # --------------------------------------------------------------
-    # Affichage des joueurs
+    # Affichage des joueurs + Option de Modification (Demandée !)
     # --------------------------------------------------------------
     def list_players(self):
-        players = [Player.from_dict(p) for p in players_table.all()]
-        self.view.show_players(players)
+        raw_players = players_table.all()
+        players = [Player.from_dict(p) for p in raw_players]
+
+        if not self.view.show_players(players):
+            return
+
+        # Demande si l'utilisateur veut modifier un joueur affiché
+        choice_num = self.view.ask_player_to_edit(len(players))
+        if choice_num == 0:
+            return
+
+        # Récupération du joueur ciblé et de son doc_id unique TinyDB
+        target_index = choice_num - 1
+        doc_id_selected = raw_players[target_index].doc_id
+
+        console.print("\n[yellow]📝 Saisie des nouvelles informations :[/yellow]")
+        new_data = self.view.ask_player_info()
+
+        if new_data:
+            players_table.update(new_data, doc_ids=[doc_id_selected])
+            console.print("[green]✓ Le joueur a bien été mis à jour ![/green]")
 
     # --------------------------------------------------------------
-    # Suppression d’un joueur (simple et robuste)
+    # Suppression d’un joueur
     # --------------------------------------------------------------
     def delete_player(self):
         players = [Player.from_dict(p) for p in players_table.all()]
@@ -41,7 +61,6 @@ class PlayerController:
             console.print("[yellow]Aucun joueur enregistré.[/yellow]")
             return
 
-        # Afficher la liste avec numéros
         self.view.show_players(players)
 
         while True:
@@ -66,5 +85,4 @@ class PlayerController:
 
         # Suppression dans TinyDB
         players_table.remove(where("national_id") == player.national_id)
-
         console.print(f"[green]Joueur {player.first_name} {player.last_name} supprimé.[/green]")

@@ -1,8 +1,12 @@
 # controllers/tournament_controller.py
 
+import random
 from models.tournament import Tournament
+from models.round import Round
+from models.match import Match
 from database import tournaments_table, players_table
 from views.tournament_view import TournamentView
+from controllers.round_controller import RoundController
 from tinydb import where
 from datetime import datetime
 
@@ -14,13 +18,23 @@ class TournamentController:
 
     def __init__(self):
         self.view = TournamentView()
+        self.round_controller = RoundController()
 
     def create_tournament(self):
+        all_players = players_table.all()
+
+        # Bloque la création s'il n'y a pas le quota de joueurs requis
+        if len(all_players) < 4:
+            console.print("\n[red]❌ Erreur : Impossible de créer un tournoi.[/red]")
+            console.print(f"[yellow]Le système ne contient que {len(all_players)} joueur(s).[/yellow]")
+            console.print("[yellow]Veuillez d'abord enregistrer au moins 4 joueurs dans le menu principal.[/yellow]\n")
+            return
+
         data = self.view.ask_tournament_info()
         tournament = Tournament(**data)
 
-        players = players_table.all()[:4]
-        tournament.players = [p["last_name"] + " " + p["first_name"] for p in players]
+        # Sélection automatique des 4 premiers joueurs
+        tournament.players = [p["last_name"] + " " + p["first_name"] for p in all_players[:4]]
 
         tournaments_table.insert(tournament.to_dict())
         console.print("[green]Tournoi créé avec succès ![/green]")
@@ -40,58 +54,69 @@ class TournamentController:
 
         while True:
             choice = console.input("Numéro du tournoi à gérer : ").strip()
-
             if not choice.isdigit():
-                console.print("[red]Numéro invalide.[/red]")
+                console.print("[red]Choix invalide.[/red]")
                 continue
-
             index = int(choice) - 1
-
             if index < 0 or index >= len(tournaments):
                 console.print("[red]Numéro hors liste.[/red]")
                 continue
-
             tournament = tournaments[index]
             break
 
-        # Heure de début automatique
-        tournament.start_time = datetime.now().strftime("%H:%M")
+        if not tournament.start_time:
+            tournament.start_time = datetime.now().strftime("%H:%M")
 
-        players = tournament.players
-        if len(players) < 4:
-            console.print("[red]Il faut au moins 4 joueurs.[/red]")
-            return
+        if not tournament.rounds:
+            plist = list(tournament.players)
+            random.shuffle(plist)
 
-        rounds = [
-            [(players[0], players[1]), (players[2], players[3])],
-            [(players[0], players[2]), (players[1], players[3])],
-            [(players[0], players[3]), (players[1], players[2])]
-        ]
+            # Algorithme mathématique de rotation pour 4 joueurs (Toutes rondes)
+            aller_rounds_paires = [
+                [(plist[0], plist[3]), (plist[1], plist[2])],  # Round 1
+                [(plist[0], plist[2]), (plist[3], plist[1])],  # Round 2
+                [(plist[0], plist[1]), (plist[2], plist[3])]   # Round 3
+            ]
 
-        scores = {p: 0 for p in players}
-        tournament.rounds = []
+            # --- SÉQUENCE MATCHS ALLER (Rounds 1 à 3) ---
+            for i, paires in enumerate(aller_rounds_paires, start=1):
+                round_aller = Round(f"Round {i} (Match Aller)")
+                for p1, p2 in paires:
+                    round_aller.matches.append(Match(p1, p2))
 
-        for i, matches in enumerate(rounds, start=1):
-            self.view.show_round(i, [{"p1": m[0], "p2": m[1]} for m in matches])
+                tournament.rounds.append(round_aller.to_dict())
+                self.view.show_round(i, round_aller.matches)
+                self.round_controller.enter_results(tournament)
 
-            round_data = []
+            # --- SÉQUENCE MATCHS RETOUR (Rounds 4 à 6) ---
+            for i, paires in enumerate(aller_rounds_paires, start=4):
+                round_retour = Round(f"Round {i} (Match Retour)")
+                for p1, p2 in paires:
+                    # Inversion de l'ordre (p2 vs p1) pour simuler le match retour
+                    round_retour.matches.append(Match(p2, p1))
 
-            for p1, p2 in matches:
-                s1, s2 = self.view.ask_score(p1, p2)
-                scores[p1] += s1
-                scores[p2] += s2
+                tournament.rounds.append(round_retour.to_dict())
+                self.view.show_round(i, round_retour.matches)
+                self.round_controller.enter_results(tournament)
 
-                round_data.append({"p1": p1, "p2": p2, "s1": s1, "s2": s2})
+        else:
+            console.print("[yellow]Ce tournoi a déjà été joué ou est en cours.[/yellow]")
 
-            tournament.rounds.append(round_data)
+        # ---- CALCUL DYNAMIQUE ET AUTOMATIQUE DU CLASSEMENT FINAL ----
+        scores = {p: 0.0 for p in tournament.players}
+
+        for r_dict in tournament.rounds:
+            r_obj = Round.from_dict(r_dict)
+            for m in r_obj.matches:
+                if m.player1 in scores:
+                    scores[m.player1] += m.score1
+                if m.player2 in scores:
+                    scores[m.player2] += m.score2
 
         tournament.results = sorted(scores.items(), key=lambda x: x[1], reverse=True)
-
-        # Heure de fin automatique
         tournament.end_time = datetime.now().strftime("%H:%M")
 
         tournaments_table.update(tournament.to_dict(), where("name") == tournament.name)
-
         self.view.show_results(tournament.results)
 
     def delete_tournament(self):
@@ -110,13 +135,10 @@ class TournamentController:
             return
 
         index = int(choice) - 1
-
         if index < 0 or index >= len(tournaments):
             console.print("[red]Numéro hors liste.[/red]")
             return
 
         tournament = tournaments[index]
-
         tournaments_table.remove(where("name") == tournament.name)
-
-        console.print(f"[green]Tournoi '{tournament.name}' supprimé ![/green]")
+        console.print(f"[green]Tournoi '{tournament.name}' supprimé avec succès.[/green]")

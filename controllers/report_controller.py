@@ -3,6 +3,7 @@
 from rich.console import Console
 from rich.panel import Panel
 from models.tournament import Tournament
+from models.round import Round
 from database import tournaments_table
 
 console = Console()
@@ -45,27 +46,27 @@ class ReportController:
             tournament = tournaments[index]
             break
 
-        console.print(Panel.fit(
-            f"[bold cyan]{tournament.name}[/bold cyan]\n"
-            f"Lieu : {tournament.location}\n"
-            f"Début : {tournament.start_date} {tournament.start_time}\n"
-            f"Fin   : {tournament.end_date} {tournament.end_time}\n"
-            f"Description : {tournament.description}\n"
-        ))
+        console.print(
+            Panel.fit(
+                f"[bold cyan]{tournament.name}[/bold cyan]\n"
+                f"Lieu : {tournament.location}\n"
+                f"Début : {tournament.start_date} {tournament.start_time}\n"
+                f"Fin   : {tournament.end_date} {tournament.end_time}\n"
+                f"Description : {tournament.description}"
+            )
+        )
 
-        if not tournament.rounds:
-            console.print("[yellow]Aucun round enregistré.[/yellow]")
-            return
-
-        for i, round_data in enumerate(tournament.rounds, start=1):
-            console.print(f"\n[bold yellow]Round {i}[/bold yellow]")
-            for match in round_data:
-                console.print(f"{match['p1']} ({match['s1']}) vs {match['p2']} ({match['s2']})")
+        # Utilisation de l'instanciation en objet Round pour lire les attributs de Match sans crash
+        for r_dict in tournament.rounds:
+            r_obj = Round.from_dict(r_dict)
+            console.print(f"\n[bold yellow]=== {r_obj.name} ===[/bold yellow]")
+            for match in r_obj.matches:
+                console.print(f"   {match.player1} ({match.score1}) vs {match.player2} ({match.score2})")
 
         if tournament.results:
             console.print("\n[bold green]=== Classement final ===[/bold green]")
             for pos, (player, score) in enumerate(tournament.results, start=1):
-                console.print(f"{pos}. {player} — {score} pts")
+                console.print(f"   {pos}. {player} — {score} pts")
 
     def full_history(self):
         tournaments = [Tournament.from_dict(t) for t in tournaments_table.all()]
@@ -87,7 +88,3 @@ class ReportController:
                 console.print("   [bold green]Classement final :[/bold green]")
                 for pos, (player, score) in enumerate(t.results, start=1):
                     console.print(f"      {pos}. {player} — {score} pts")
-            else:
-                console.print("   [yellow]Aucun classement enregistré.[/yellow]")
-
-            console.print()

@@ -43,29 +43,20 @@ class TournamentView:
         console.print(table)
 
     def show_round(self, round_number, matches):
-        console.print(Panel.fit(f"[bold cyan]Round {round_number}[/bold cyan]"))
+        # Utilisation propre des attributs .player1 et .player2 de l'objet Match
+        console.print(Panel.fit(f"[bold cyan]Génération des matchs — Round {round_number}[/bold cyan]"))
         for m in matches:
-            console.print(f"{m['p1']} vs {m['p2']}")
-
-    def ask_score(self, p1, p2):
-        console.print(f"Score pour {p1} vs {p2} :")
-        while True:
-            try:
-                s1 = float(console.input(f"Score de {p1} : ").replace(",", "."))
-                s2 = float(console.input(f"Score de {p2} : ").replace(",", "."))
-                return s1, s2
-            except ValueError:
-                console.print("[red]Veuillez entrer un nombre valide (0, 0.5 ou 1).[/red]")
+            console.print(f"   [white]{m.player1}[/white] vs [white]{m.player2}[/white]")
+        console.print("")
 
     def show_results(self, results):
-        console.print(Panel.fit("[bold green]Résultats du tournoi[/bold green]"))
+        table = Table(title="🏆 CLASSEMENT FINAL DU TOURNOI 🏆")
 
-        table = Table(title="Classement final")
-        table.add_column("Position", style="yellow")
+        table.add_column("Rang", style="yellow", justify="center")
         table.add_column("Joueur", style="cyan")
-        table.add_column("Score", style="magenta")
+        table.add_column("Score Total", style="green", justify="center")
 
         for pos, (player, score) in enumerate(results, start=1):
-            table.add_row(str(pos), player, str(score))
+            table.add_row(str(pos), player, f"{score} pts")
 
-        console.print(table)
+        console.print("\n", table, "\n")

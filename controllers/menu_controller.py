@@ -68,7 +68,7 @@ class MenuController:
 
             console.print("1. Créer un tournoi")
             console.print("2. Liste des tournois")
-            console.print("3. Gérer un tournoi")
+            console.print("3. Lancer les matchs d’un tournoi")
             console.print("4. Supprimer un tournoi")
             console.print("0. Retour\n")
 

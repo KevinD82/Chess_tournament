@@ -15,34 +15,34 @@ class RoundView:
         console.print(
             Panel.fit(
                 f"[bold cyan]=== Début du {round_obj.name} ===[/bold cyan]\n"
-                f"[dim]Veuillez saisir les scores des matchs[/dim]"
+                f"[dim]Veuillez saisir les résultats des matchs[/dim]"
             )
         )
 
     # --------------------------------------------------------------
-    # Saisie du score d’un match
+    # Détermination du vainqueur d’un match (Système 1, N, 2)
     # --------------------------------------------------------------
     def ask_match_result(self, match):
+        """
+        Demande directement le vainqueur du match.
+        Retourne un tuple (score1, score2) automatiquement calculé.
+        """
         while True:
             console.print(
                 Panel.fit(
                     f"[bold cyan]Résultat du match[/bold cyan]\n\n"
-                    f"[white]{match.player1}[/white] vs [white]{match.player2}[/white]\n\n"
-                    f"[dim]Scores possibles : 0 / 0.5 / 1[/dim]"
+                    f"[white][1] {match.player1}[/white] vs [white][2] {match.player2}[/white]\n\n"
+                    f"[yellow]Options : [1] Victoire J1 | [N] Match Nul | [2] Victoire J2[/yellow]"
                 )
             )
 
-            s1 = console.input(f"Score de {match.player1} : ").replace(",", ".")
-            s2 = console.input(f"Score de {match.player2} : ").replace(",", ".")
+            choice = console.input("[bold yellow]Votre choix (1, N ou 2) : [/bold yellow]").strip().upper()
 
-            try:
-                s1 = float(s1)
-                s2 = float(s2)
-
-                if s1 in (0, 0.5, 1) and s2 in (0, 0.5, 1):
-                    return s1, s2
-
-            except ValueError:
-                pass
-
-            console.print("[red]Score invalide. Veuillez entrer 0, 0.5 ou 1.[/red]")
+            if choice == "1":
+                return 1.0, 0.0  # Joueur 1 gagne, Joueur 2 perd
+            elif choice == "N" or choice == "0":
+                return 0.5, 0.5  # Match nul
+            elif choice == "2":
+                return 0.0, 1.0  # Joueur 1 perd, Joueur 2 gagne
+            else:
+                console.print("[red]Choix invalide ! Veuillez taper 1, N, ou 2.[/red]")

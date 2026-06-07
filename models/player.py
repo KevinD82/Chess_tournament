@@ -39,7 +39,6 @@ class Player:
     def to_dict(self):
         """
         Convertit l'objet en dictionnaire pour stockage dans TinyDB.
-        
         """
         return {
             "last_name": self.last_name,
@@ -53,7 +52,6 @@ class Player:
     def from_dict(cls, data):
         """
         Recrée un objet à partir d'un dictionnaire TinyDB.
-        
         """
         return cls(
             last_name=data["last_name"],
@@ -70,7 +68,6 @@ class Player:
         """
         Ajoute des points au joueur après un match.
             points : nombre de points à ajouter (1 pour victoire, 0.5 pour nul, 0 pour défaite)
-            
         """
         self.score += points
 

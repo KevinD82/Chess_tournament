@@ -50,9 +50,9 @@ class Tournament:
             start_date=data.get("start_date"),
             end_date=data.get("end_date"),
             description=data.get("description"),
-            players=data.get("players", []),
-            rounds=data.get("rounds", []),
-            results=data.get("results", []),
-            start_time=data.get("start_time", ""),
-            end_time=data.get("end_time", "")
+            players=data.get("players"),
+            rounds=data.get("rounds"),
+            results=data.get("results"),
+            start_time=data.get("start_time"),
+            end_time=data.get("end_time")
         )

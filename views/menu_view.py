@@ -46,7 +46,7 @@ class MenuView:
 
         console.print("1. Créer un tournoi")
         console.print("2. Liste des tournois")
-        console.print("3. Gérer un tournoi")
+        console.print("3. Lancer les matchs d’un tournoi")
         console.print("4. Supprimer un tournoi")
         console.print("0. Retour\n")
 
@@ -60,6 +60,7 @@ class MenuView:
 
         console.print("1. Liste des tournois")
         console.print("2. Détails d’un tournoi")
+        console.print("3. Historique complet")
         console.print("0. Retour\n")
 
         return console.input("[bold yellow]Votre choix : [/bold yellow]")
