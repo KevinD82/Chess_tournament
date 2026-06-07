@@ -1,16 +1,17 @@
 # controllers/tournament_controller.py
 
 import random
+from datetime import datetime
+from tinydb import where
+from rich.console import Console
+
 from models.tournament import Tournament
 from models.round import Round
 from models.match import Match
 from database import tournaments_table, players_table
 from views.tournament_view import TournamentView
 from controllers.round_controller import RoundController
-from tinydb import where
-from datetime import datetime
 
-from rich.console import Console
 console = Console()
 
 
@@ -68,35 +69,25 @@ class TournamentController:
             tournament.start_time = datetime.now().strftime("%H:%M")
 
         if not tournament.rounds:
+            # Mélange initial unique pour varier l'ordre des confrontations à chaque tournoi
             plist = list(tournament.players)
             random.shuffle(plist)
 
-            # Algorithme mathématique de rotation pour 4 joueurs (Toutes rondes)
+            # Algorithme mathématique de rotation pour 4 joueurs (Toutes rondes - Confrontation unique)
             aller_rounds_paires = [
                 [(plist[0], plist[3]), (plist[1], plist[2])],  # Round 1
                 [(plist[0], plist[2]), (plist[3], plist[1])],  # Round 2
                 [(plist[0], plist[1]), (plist[2], plist[3])]   # Round 3
             ]
 
-            # --- SÉQUENCE MATCHS ALLER (Rounds 1 à 3) ---
+            # --- SÉQUENCE DES MATCHS UNIQUES (Rounds 1 à 3) ---
             for i, paires in enumerate(aller_rounds_paires, start=1):
-                round_aller = Round(f"Round {i} (Match Aller)")
+                round_obj = Round(f"Round {i}")
                 for p1, p2 in paires:
-                    round_aller.matches.append(Match(p1, p2))
+                    round_obj.matches.append(Match(p1, p2))
 
-                tournament.rounds.append(round_aller.to_dict())
-                self.view.show_round(i, round_aller.matches)
-                self.round_controller.enter_results(tournament)
-
-            # --- SÉQUENCE MATCHS RETOUR (Rounds 4 à 6) ---
-            for i, paires in enumerate(aller_rounds_paires, start=4):
-                round_retour = Round(f"Round {i} (Match Retour)")
-                for p1, p2 in paires:
-                    # Inversion de l'ordre (p2 vs p1) pour simuler le match retour
-                    round_retour.matches.append(Match(p2, p1))
-
-                tournament.rounds.append(round_retour.to_dict())
-                self.view.show_round(i, round_retour.matches)
+                tournament.rounds.append(round_obj.to_dict())
+                self.view.show_round(i, round_obj.matches)
                 self.round_controller.enter_results(tournament)
 
         else:

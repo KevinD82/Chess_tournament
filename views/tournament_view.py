@@ -43,7 +43,7 @@ class TournamentView:
         console.print(table)
 
     def show_round(self, round_number, matches):
-        # Utilisation propre des attributs .player1 et .player2 de l'objet Match
+        # Affichage propre utilisant les attributs d'objet Match
         console.print(Panel.fit(f"[bold cyan]Génération des matchs — Round {round_number}[/bold cyan]"))
         for m in matches:
             console.print(f"   [white]{m.player1}[/white] vs [white]{m.player2}[/white]")
