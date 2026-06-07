@@ -34,7 +34,7 @@ class RoundController:
         Crée un nouveau round pour le tournoi donné.
         - Round.create_new(tournament) génère automatiquement :
             * le nom du round (Round 1, Round 2…)
-            * les matchs selon l’algorithme suisse
+            * les matchs basés sur les joueurs du tournoi
             * l’heure de début
         - Le round est ajouté à la liste des rounds du tournoi
         - Le tournoi est sauvegardé dans TinyDB

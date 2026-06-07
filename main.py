@@ -18,6 +18,6 @@ def main():
 
 
 # Ce bloc garantit que main() n'est exécuté que si le fichier est lancé directement.
-# Il ne s'exécute pas si le fichier est importé ailleurs.
+
 if __name__ == "__main__":
     main()

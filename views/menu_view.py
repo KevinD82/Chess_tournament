@@ -8,8 +8,8 @@ console = Console()
 
 class MenuView:
     """
-    Vue responsable de l'affichage des menus.
-    Elle ne contient aucune logique métier.
+    Vue de l'affichage des menus.
+    Cette classe est responsable de l'affichage de tous les menus et messages à l'utilisateur.
     """
 
     # --------------------------------------------------------------
@@ -58,13 +58,8 @@ class MenuView:
     def display_report_menu(self):
         console.print(Panel.fit("[bold cyan]=== RAPPORTS ===[/bold cyan]"))
 
-        console.print("1. Liste des joueurs")
-        console.print("2. Liste des tournois")
-        console.print("3. Détails d’un tournoi")
-        console.print("4. Rounds d’un tournoi")
-        console.print("5. Matchs d’un tournoi")
-        console.print("6. Scores d’un tournoi")
-        console.print("7. Historique complet")
+        console.print("1. Liste des tournois")
+        console.print("2. Détails d’un tournoi")
         console.print("0. Retour\n")
 
         return console.input("[bold yellow]Votre choix : [/bold yellow]")
