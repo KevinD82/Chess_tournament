@@ -1,25 +1,16 @@
 # models/tournament.py
 
-from models.round import Round
-
-
 class Tournament:
-
-    def __init__(self, name, location, start_date, end_date, description):
+    def __init__(self, name, location, start_date, end_date, description,
+                 players=None, rounds=None, results=None):
         self.name = name
         self.location = location
         self.start_date = start_date
         self.end_date = end_date
         self.description = description
-
-        self.players = []          # objets Player (non sauvegardés)
-        self.players_ids = []      # IDs des joueurs
-
-        self.rounds = []           # objets Round
-        self.generated_rounds = []  # liste de paires d'IDs
-        self.current_round_index = 0
-
-        self.final_ranking = []    # [(player_id, score), ...]
+        self.players = players or []
+        self.rounds = rounds or []   # LISTE DES ROUNDS
+        self.results = results or [] # CLASSEMENT FINAL
 
     def to_dict(self):
         return {
@@ -28,28 +19,20 @@ class Tournament:
             "start_date": self.start_date,
             "end_date": self.end_date,
             "description": self.description,
-            "players_ids": self.players_ids,
-            "rounds": [r.to_dict() for r in self.rounds],
-            "generated_rounds": self.generated_rounds,  # déjà IDs
-            "current_round_index": self.current_round_index,
-            "final_ranking": self.final_ranking,
+            "players": self.players,
+            "rounds": self.rounds,
+            "results": self.results,
         }
 
-    @classmethod
-    def from_dict(cls, data):
-        t = cls(
+    @staticmethod
+    def from_dict(data):
+        return Tournament(
             name=data["name"],
             location=data["location"],
             start_date=data["start_date"],
             end_date=data["end_date"],
             description=data["description"],
+            players=data.get("players", []),
+            rounds=data.get("rounds", []),
+            results=data.get("results", []),
         )
-
-        t.players_ids = data.get("players_ids", [])
-        t.rounds = [Round.from_dict(r) for r in data.get("rounds", [])]
-
-        t.generated_rounds = data.get("generated_rounds", [])
-        t.current_round_index = data.get("current_round_index", 0)
-        t.final_ranking = data.get("final_ranking", [])
-
-        return t

@@ -8,31 +8,55 @@ console = Console()
 
 class MenuView:
     """
-    Vue responsable de l'affichage du menu principal et du menu des rapports.
+    Vue responsable de l'affichage des menus.
+    Elle ne contient aucune logique métier.
     """
 
     # --------------------------------------------------------------
     # Menu principal
     # --------------------------------------------------------------
-    def main_menu(self):
-        console.print(Panel.fit("[bold cyan]Menu Principal[/bold cyan]"))
+    def display_main_menu(self):
+        console.print(Panel.fit("[bold cyan]=== MENU PRINCIPAL ===[/bold cyan]"))
+
+        console.print("1. Gestion des joueurs")
+        console.print("2. Gestion des tournois")
+        console.print("3. Rapports")
+        console.print("0. Quitter\n")
+
+        return console.input("[bold yellow]Votre choix : [/bold yellow]")
+
+    # --------------------------------------------------------------
+    # Menu joueurs
+    # --------------------------------------------------------------
+    def display_player_menu(self):
+        console.print(Panel.fit("[bold cyan]=== GESTION DES JOUEURS ===[/bold cyan]"))
 
         console.print("1. Créer un joueur")
         console.print("2. Liste des joueurs")
-        console.print("3. Créer un tournoi")
-        console.print("4. Liste des tournois")
-        console.print("5. Gérer un tournoi")
-        console.print("6. Rapports")
-        console.print("7. Supprimer un joueur")
-        console.print("0. Quitter\n")
+        console.print("3. Supprimer un joueur")
+        console.print("0. Retour\n")
 
-        return console.input("[yellow]Votre choix : [/yellow]")
+        return console.input("[bold yellow]Votre choix : [/bold yellow]")
 
     # --------------------------------------------------------------
-    # Menu des rapports
+    # Menu tournois
     # --------------------------------------------------------------
-    def report_menu(self):
-        console.print(Panel.fit("[bold cyan]Menu des rapports[/bold cyan]"))
+    def display_tournament_menu(self):
+        console.print(Panel.fit("[bold cyan]=== GESTION DES TOURNOIS ===[/bold cyan]"))
+
+        console.print("1. Créer un tournoi")
+        console.print("2. Liste des tournois")
+        console.print("3. Gérer un tournoi")
+        console.print("4. Supprimer un tournoi")
+        console.print("0. Retour\n")
+
+        return console.input("[bold yellow]Votre choix : [/bold yellow]")
+
+    # --------------------------------------------------------------
+    # Menu rapports
+    # --------------------------------------------------------------
+    def display_report_menu(self):
+        console.print(Panel.fit("[bold cyan]=== RAPPORTS ===[/bold cyan]"))
 
         console.print("1. Liste des joueurs")
         console.print("2. Liste des tournois")
@@ -43,7 +67,7 @@ class MenuView:
         console.print("7. Historique complet")
         console.print("0. Retour\n")
 
-        return console.input("[yellow]Votre choix : [/yellow]")
+        return console.input("[bold yellow]Votre choix : [/bold yellow]")
 
     # --------------------------------------------------------------
     # Message de sortie
