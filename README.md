@@ -51,7 +51,8 @@ CHESS_TOURNAMENT/
 ├── database.py              
 ├── main.py               # Point d’entrée du programme
 ├── README.md
-└── requirements.txt
+├── requirements.txt
+└── .flake8
 ```
 
 ### ▶️ Exécution du programme
