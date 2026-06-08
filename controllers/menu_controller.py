@@ -10,6 +10,9 @@ from rich.panel import Panel
 console = Console()
 
 
+# --------------------------------------------------------------
+# Menu principal
+# --------------------------------------------------------------
 class MenuController:
 
     def __init__(self):
@@ -40,6 +43,9 @@ class MenuController:
             else:
                 console.print("[red]Choix invalide.[/red]")
 
+    # --------------------------------------------------------------
+    # Menu joueurs
+    # --------------------------------------------------------------
     def menu_players(self):
         while True:
             console.print(Panel.fit("[bold cyan]=== GESTION DES JOUEURS ===[/bold cyan]"))
@@ -62,6 +68,9 @@ class MenuController:
             else:
                 console.print("[red]Choix invalide.[/red]")
 
+    # --------------------------------------------------------------
+    # Menu tournois
+    # --------------------------------------------------------------
     def menu_tournaments(self):
         while True:
             console.print(Panel.fit("[bold cyan]=== GESTION DES TOURNOIS ===[/bold cyan]"))
@@ -87,6 +96,9 @@ class MenuController:
             else:
                 console.print("[red]Choix invalide.[/red]")
 
+    # --------------------------------------------------------------
+    # Menu rapports
+    # --------------------------------------------------------------
     def menu_reports(self):
         while True:
             console.print(Panel.fit("[bold cyan]=== RAPPORTS ===[/bold cyan]"))

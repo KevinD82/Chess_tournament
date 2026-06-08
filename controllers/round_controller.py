@@ -6,24 +6,23 @@ from views.round_view import RoundView
 
 
 class RoundController:
-    """
-    Le RoundController gère toute la logique liée aux rounds d’un tournoi :
-    - création d’un nouveau round
-    - saisie des résultats des matchs
-    - mise à jour du tournoi dans la base de données
-    """
+
+    # Le RoundController gère toute la logique liée aux rounds d’un tournoi :
+    # - création d’un nouveau round
+    # - saisie des résultats des matchs
+    # - mise à jour du tournoi dans la base de données
 
     def __init__(self):
         self.view = RoundView()
 
     def create_round(self, tournament):
-        """Crée un nouveau round pour le tournoi donné."""
+        # Crée un nouveau round pour le tournoi donné.
         pass
 
     def enter_results(self, tournament):
-        """
-        Permet de définir le résultat du dernier round du tournoi.
-        """
+
+        # Permet de définir le résultat du dernier round du tournoi.
+
         if not tournament.rounds:
             return
 

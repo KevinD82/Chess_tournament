@@ -21,6 +21,9 @@ class TournamentController:
         self.view = TournamentView()
         self.round_controller = RoundController()
 
+    # ------------------------------------------------------------------
+    # Creation du tournoi
+    # ------------------------------------------------------------------
     def create_tournament(self):
         all_players = players_table.all()
 
@@ -40,10 +43,16 @@ class TournamentController:
         tournaments_table.insert(tournament.to_dict())
         console.print("[green]Tournoi créé avec succès ![/green]")
 
+    # ------------------------------------------------------------------
+    # Liste des tournois
+    # ------------------------------------------------------------------
     def list_tournaments(self):
         tournaments = [Tournament.from_dict(t) for t in tournaments_table.all()]
         self.view.show_tournaments(tournaments)
 
+    # ------------------------------------------------------------------
+    # Gestion des tournois
+    # ------------------------------------------------------------------
     def manage_tournament(self):
         tournaments = [Tournament.from_dict(t) for t in tournaments_table.all()]
 
@@ -110,6 +119,9 @@ class TournamentController:
         tournaments_table.update(tournament.to_dict(), where("name") == tournament.name)
         self.view.show_results(tournament.results)
 
+    # ------------------------------------------------------------------
+    # Suppression des tournois
+    # ------------------------------------------------------------------
     def delete_tournament(self):
         tournaments = [Tournament.from_dict(t) for t in tournaments_table.all()]
 

@@ -10,7 +10,9 @@ console = Console()
 
 
 class ReportController:
-
+    # ------------------------------------------------------------------
+    # 1. Affichage de la liste des tournois
+    # ------------------------------------------------------------------
     def list_tournaments(self):
         tournaments = [Tournament.from_dict(t) for t in tournaments_table.all()]
 
@@ -22,6 +24,9 @@ class ReportController:
 
         for i, t in enumerate(tournaments, start=1):
             console.print(f"{i}. {t.name} ({t.location}) — {t.start_date} → {t.end_date}")
+    # ------------------------------------------------------------------
+    # 2. Affichage des détails d’un tournoi
+    # ------------------------------------------------------------------
 
     def tournament_details(self):
         tournaments = [Tournament.from_dict(t) for t in tournaments_table.all()]
@@ -56,7 +61,7 @@ class ReportController:
             )
         )
 
-        # Utilisation de l'instanciation en objet Round pour lire les attributs de Match sans crash
+        # Utilisation de l'instanciation en objet Round pour lire les attributs de Match
         for r_dict in tournament.rounds:
             r_obj = Round.from_dict(r_dict)
             console.print(f"\n[bold yellow]=== {r_obj.name} ===[/bold yellow]")

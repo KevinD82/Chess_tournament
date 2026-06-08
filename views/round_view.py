@@ -23,10 +23,10 @@ class RoundView:
     # Détermination du vainqueur d’un match (Système 1, N, 2)
     # --------------------------------------------------------------
     def ask_match_result(self, match):
-        """
-        Demande directement le vainqueur du match.
-        Retourne un tuple (score1, score2) automatiquement calculé.
-        """
+
+        # Demande directement le vainqueur du match.
+        # Retourne un tuple (score1, score2) automatiquement calculé.
+
         while True:
             console.print(
                 Panel.fit(

@@ -7,10 +7,10 @@ console = Console()
 
 
 class MenuView:
-    """
-    Vue de l'affichage des menus.
-    Cette classe est responsable de l'affichage de tous les menus et messages à l'utilisateur.
-    """
+
+    # Vue de l'affichage des menus.
+    # Cette classe est responsable de l'affichage de tous les menus et messages à l'utilisateur.
+
 
     # --------------------------------------------------------------
     # Menu principal

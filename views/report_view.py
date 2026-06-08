@@ -8,14 +8,14 @@ console = Console()
 
 
 class ReportView:
-    """
-    Vue dédiée à l'affichage des rapports :
-    - liste des tournois
-    - détails d’un tournoi
 
-    Cette vue ne contient aucune logique métier.
-    Elle affiche uniquement les données fournies par ReportController.
-    """
+    # Vue dédiée à l'affichage des rapports :
+    # - liste des tournois
+    # - détails d’un tournoi
+
+    # Cette vue ne contient aucune logique métier.
+    # Elle affiche uniquement les données fournies par ReportController.
+
 
     # ------------------------------------------------------------------
     # 1. Affichage de la liste des tournois
@@ -39,13 +39,13 @@ class ReportView:
     # 2. Affichage des détails d’un tournoi
     # ------------------------------------------------------------------
     def show_tournament_details(self, tournament):
-        """
-        Affiche les informations générales d’un tournoi :
-        - nom
-        - lieu
-        - dates
-        - description
-        """
+
+        # Affiche les informations générales d’un tournoi :
+        # - nom
+        # - lieu
+        # - dates
+        # - description
+
         console.print(
             Panel.fit(
                 f"[bold cyan]{tournament.name}[/bold cyan]\n"

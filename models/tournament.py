@@ -8,11 +8,12 @@ class Tournament:
         start_date,
         end_date,
         description,
+        start_time=None,
+        end_time=None,
         players=None,
         rounds=None,
-        results=None,
-        start_time=None,
-        end_time=None
+        results=None
+
     ):
         self.name = name
         self.location = location
@@ -20,7 +21,6 @@ class Tournament:
         self.end_date = end_date
         self.description = description
 
-        # Heures automatiques
         self.start_time = start_time or ""
         self.end_time = end_time or ""
 
@@ -35,11 +35,12 @@ class Tournament:
             "start_date": self.start_date,
             "end_date": self.end_date,
             "description": self.description,
+            "start_time": self.start_time,
+            "end_time": self.end_time,
             "players": self.players,
             "rounds": self.rounds,
             "results": self.results,
-            "start_time": self.start_time,
-            "end_time": self.end_time,
+
         }
 
     @classmethod

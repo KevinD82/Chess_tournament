@@ -79,7 +79,7 @@ class Player:
         self.score = 0
 
     # ----------------------------------------------------------------------
-    # Représentation textuelle (utile pour debug et affichage simple)
+    # Représentation textuelle
     # ----------------------------------------------------------------------
     def __str__(self):
         """

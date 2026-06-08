@@ -6,7 +6,9 @@ from rich.table import Table
 
 console = Console()
 
-
+# --------------------------------------------------------------
+# Affichage du tournoi, des rounds et des résultats
+# --------------------------------------------------------------
 class TournamentView:
 
     def ask_tournament_info(self):
@@ -25,7 +27,9 @@ class TournamentView:
             "end_date": end_date,
             "description": description,
         }
-
+    # --------------------------------------------------------------
+    # Affichage du tournoi
+    # --------------------------------------------------------------
     def show_tournaments(self, tournaments):
         table = Table(title="Liste des tournois")
 
@@ -42,6 +46,9 @@ class TournamentView:
 
         console.print(table)
 
+    # --------------------------------------------------------------
+    # Affichage du round et des matchs
+    # --------------------------------------------------------------
     def show_round(self, round_number, matches):
         # Affichage propre utilisant les attributs d'objet Match
         console.print(Panel.fit(f"[bold cyan]Génération des matchs — Round {round_number}[/bold cyan]"))
@@ -49,6 +56,9 @@ class TournamentView:
             console.print(f"   [white]{m.player1}[/white] vs [white]{m.player2}[/white]")
         console.print("")
 
+    # --------------------------------------------------------------
+    # Affichage des résultats
+    # --------------------------------------------------------------
     def show_results(self, results):
         table = Table(title="🏆 CLASSEMENT FINAL DU TOURNOI 🏆")
 

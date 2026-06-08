@@ -21,24 +21,33 @@ Le projet suit une architecture **MVC (Model – View – Controller)** pour gar
 CHESS_TOURNAMENT/
 │
 ├── controllers/
+│   ├── __init__.py
+│   ├── menu_controller.py
 │   ├── player_controller.py
+│   ├── report_controller.py
 │   ├── round_controller.py
 │   └── tournament_controller.py
 │
 ├── models/
+│   ├── __init__.py
+│   ├── match.py
 │   ├── player.py
 │   ├── round.py
 │   └── tournament.py
 │
 ├── views/
+│   ├── __init__.py
+│   ├── menu_view.py
 │   ├── player_view.py
+│   ├── report_view.py
 │   ├── round_view.py
 │   └── tournament_view.py
 │
 ├── data/
 │   └── db.json
 │
-├── flake8-report/        # Rapport HTML généré (qualité du code)
+├── flake8-report/        # Rapport HTML généré
+│   └── index.html
 ├── database.py              
 ├── main.py               # Point d’entrée du programme
 ├── README.md
@@ -82,20 +91,8 @@ Flake8 + flake8-html — Analyse de qualité du code
 Architecture MVC — Séparation claire des responsabilités
 ```
 
-🧠 Points forts du projet
-```
-Architecture propre et modulaire
 
-Gestion complète d’un tournoi Round‑Robin
-
-Sauvegarde persistante des données
-
-Interface console claire et ergonomique
-
-Code entièrement validé par Flake8
-```
 
 👤 Auteur
 Kevin Delcroix  
-Projet OpenClassrooms — Développeur d’Applications Python
 2026

@@ -8,9 +8,9 @@ console = Console()
 
 
 class PlayerView:
-    """
-    Vue dédiée à la création et l'affichage des joueurs.
-    """
+
+    # Vue dédiée à la création et l'affichage des joueurs.
+
 
     # --------------------------------------------------------------
     # Création simple d’un joueur

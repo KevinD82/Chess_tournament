@@ -25,35 +25,22 @@ class PlayerController:
         players_table.insert(player.to_dict())
         console.print("[green]Joueur créé avec succès ![/green]")
 
-    # --------------------------------------------------------------
-    # Affichage des joueurs + Option de Modification (Demandée !)
-    # --------------------------------------------------------------
-    def list_players(self):
-        raw_players = players_table.all()
-        players = [Player.from_dict(p) for p in raw_players]
 
-        if not self.view.show_players(players):
-            return
+# --------------------------------------------------------------
+# Affichage des joueurs
+# # --------------------------------------------------------------
+def list_players(self):
+    players = [Player.from_dict(p) for p in players_table.all()]
 
-        # Demande si l'utilisateur veut modifier un joueur affiché
-        choice_num = self.view.ask_player_to_edit(len(players))
-        if choice_num == 0:
-            return
+    # Affiche simplement la liste
+    self.view.show_players(players)
 
-        # Récupération du joueur ciblé et de son doc_id unique TinyDB
-        target_index = choice_num - 1
-        doc_id_selected = raw_players[target_index].doc_id
-
-        console.print("\n[yellow]📝 Saisie des nouvelles informations :[/yellow]")
-        new_data = self.view.ask_player_info()
-
-        if new_data:
-            players_table.update(new_data, doc_ids=[doc_id_selected])
-            console.print("[green]✓ Le joueur a bien été mis à jour ![/green]")
+    return
 
     # --------------------------------------------------------------
     # Suppression d’un joueur
     # --------------------------------------------------------------
+
     def delete_player(self):
         players = [Player.from_dict(p) for p in players_table.all()]
 
