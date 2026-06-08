@@ -64,7 +64,6 @@ class ReportController:
 
         players_dict = {p['national_id']: Player.from_dict(p) for p in players_table.all()}
 
-        # CORRECTION E128 : Alignement visuel propre et standardisé
         tournament_players = getattr(
             tournament, "players", getattr(
                 tournament, "players_list", getattr(
@@ -76,7 +75,6 @@ class ReportController:
         if not tournament_players and tournament.rounds:
             detected_players = set()
             for round_obj in tournament.rounds:
-                # CORRECTION E501 : Découpage de la ligne trop longue pour respecter les 120 caractères max
                 if isinstance(round_obj, dict):
                     matches = round_obj.get("matches", [])
                 else:
@@ -103,6 +101,7 @@ class ReportController:
         if not tournament:
             return
 
+        # Dictionnaire complet pour les correspondances d'affichage des noms
         players_data = {
             p['national_id']: f"{p['last_name']} {p['first_name']}"
             for p in players_table.all()
@@ -146,7 +145,6 @@ class ReportController:
                     p1, s1 = match[0][0], match[0][1]
                     p2, s2 = match[1][0], match[1][1]
 
-                # CORRECTION E701 : Séparation des instructions sur des lignes distinctes après les deux-points
                 if p1 in scores:
                     scores[p1] += float(s1)
                 if p2 in scores:
@@ -159,4 +157,5 @@ class ReportController:
 
         ranking.sort(key=lambda x: x[1], reverse=True)
 
-        self.view.show_full_tournament_report(tournament, ranking)
+        # Envoi de la table des correspondances à la vue
+        self.view.show_full_tournament_report(tournament, ranking, players_data)
