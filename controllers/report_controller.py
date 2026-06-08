@@ -1,95 +1,162 @@
 # controllers/report_controller.py
 
-from rich.console import Console
-from rich.panel import Panel
 from models.tournament import Tournament
-from models.round import Round
-from database import tournaments_table
+from models.player import Player
+from database import tournaments_table, players_table
+from views.report_view import ReportView
+from rich.console import Console
 
 console = Console()
 
 
 class ReportController:
-    # ------------------------------------------------------------------
-    # 1. Affichage de la liste des tournois
-    # ------------------------------------------------------------------
-    def list_tournaments(self):
-        tournaments = [Tournament.from_dict(t) for t in tournaments_table.all()]
+    """Gère l'extraction des données et le calcul des classements pour les rapports."""
 
-        if not tournaments:
+    def __init__(self):
+        """Initialise le contrôleur de rapports avec sa vue."""
+        self.view = ReportView()
+
+    def run(self):
+        """Boucle principale du menu des rapports."""
+        while True:
+            choice = self.view.display_report_menu()
+            if choice == "1":
+                self.tournament_details_report()
+            elif choice == "2":
+                self.full_tournament_report()
+            elif choice == "0":
+                break
+            else:
+                console.print("[red]Choix invalide.[/red]")
+
+    def _select_tournament_with_raw_data(self):
+        """Sélectionne un tournoi et conserve ses données brutes de la base TinyDB."""
+        raw_tournaments = tournaments_table.all()
+        if not raw_tournaments:
             console.print("[yellow]Aucun tournoi enregistré.[/yellow]")
-            return
+            return None, None
 
-        console.print(Panel.fit("[bold cyan]Liste des tournois[/bold cyan]\n"))
+        for index, t in enumerate(raw_tournaments, start=1):
+            console.print(f"{index}. {t.get('name')} ({t.get('location', '')})")
 
-        for i, t in enumerate(tournaments, start=1):
-            console.print(f"{i}. {t.name} ({t.location}) — {t.start_date} → {t.end_date}")
-    # ------------------------------------------------------------------
-    # 2. Affichage des détails d’un tournoi
-    # ------------------------------------------------------------------
+        choice = console.input("\nSélectionnez le numéro du tournoi : ").strip()
+        if not choice.isdigit() or int(choice) < 1 or int(choice) > len(raw_tournaments):
+            console.print("[red]Numéro invalide.[/red]")
+            return None, None
+
+        raw_data = raw_tournaments[int(choice) - 1]
+        tournament_obj = Tournament.from_dict(raw_data)
+        return tournament_obj, raw_data
 
     def tournament_details(self):
-        tournaments = [Tournament.from_dict(t) for t in tournaments_table.all()]
+        """Alias pour le MenuController."""
+        self.tournament_details_report()
 
-        if not tournaments:
-            console.print("[yellow]Aucun tournoi enregistré.[/yellow]")
+    def full_history(self):
+        """Alias pour le MenuController."""
+        self.full_tournament_report()
+
+    def tournament_details_report(self):
+        """Génère le rapport des détails (Dates & Joueurs présents)."""
+        tournament, raw_data = self._select_tournament_with_raw_data()
+        if not tournament:
             return
 
-        while True:
-            choice = console.input("Numéro du tournoi : ").strip()
+        players_dict = {p['national_id']: Player.from_dict(p) for p in players_table.all()}
 
-            if not choice.isdigit():
-                console.print("[red]Numéro invalide.[/red]")
-                continue
-
-            index = int(choice) - 1
-
-            if index < 0 or index >= len(tournaments):
-                console.print("[red]Numéro hors liste.[/red]")
-                continue
-
-            tournament = tournaments[index]
-            break
-
-        console.print(
-            Panel.fit(
-                f"[bold cyan]{tournament.name}[/bold cyan]\n"
-                f"Lieu : {tournament.location}\n"
-                f"Début : {tournament.start_date} {tournament.start_time}\n"
-                f"Fin   : {tournament.end_date} {tournament.end_time}\n"
-                f"Description : {tournament.description}"
+        # CORRECTION E128 : Alignement visuel propre et standardisé
+        tournament_players = getattr(
+            tournament, "players", getattr(
+                tournament, "players_list", getattr(
+                    tournament, "registered_players", []
+                )
             )
         )
 
-        # Utilisation de l'instanciation en objet Round pour lire les attributs de Match
-        for r_dict in tournament.rounds:
-            r_obj = Round.from_dict(r_dict)
-            console.print(f"\n[bold yellow]=== {r_obj.name} ===[/bold yellow]")
-            for match in r_obj.matches:
-                console.print(f"   {match.player1} ({match.score1}) vs {match.player2} ({match.score2})")
+        if not tournament_players and tournament.rounds:
+            detected_players = set()
+            for round_obj in tournament.rounds:
+                # CORRECTION E501 : Découpage de la ligne trop longue pour respecter les 120 caractères max
+                if isinstance(round_obj, dict):
+                    matches = round_obj.get("matches", [])
+                else:
+                    matches = getattr(round_obj, "matches", [])
 
-        if tournament.results:
-            console.print("\n[bold green]=== Classement final ===[/bold green]")
-            for pos, (player, score) in enumerate(tournament.results, start=1):
-                console.print(f"   {pos}. {player} — {score} pts")
+                for match in matches:
+                    if isinstance(match, dict):
+                        detected_players.add(match.get("player1"))
+                        detected_players.add(match.get("player2"))
+                    elif hasattr(match, "player1"):
+                        detected_players.add(match.player1)
+                        detected_players.add(match.player2)
+                    else:
+                        detected_players.add(match[0][0])
+                        detected_players.add(match[1][0])
+            tournament_players = list(detected_players)
 
-    def full_history(self):
-        tournaments = [Tournament.from_dict(t) for t in tournaments_table.all()]
+        tournament.players = tournament_players
+        self.view.show_tournament_details(tournament, players_dict)
 
-        if not tournaments:
-            console.print("[yellow]Aucun tournoi enregistré.[/yellow]")
+    def full_tournament_report(self):
+        """Génère le rapport complet avec injection stricte de la date et de l'heure brute."""
+        tournament, raw_data = self._select_tournament_with_raw_data()
+        if not tournament:
             return
 
-        console.print(Panel.fit("[bold cyan]Historique complet des tournois[/bold cyan]\n"))
+        players_data = {
+            p['national_id']: f"{p['last_name']} {p['first_name']}"
+            for p in players_table.all()
+        }
 
-        for i, t in enumerate(tournaments, start=1):
-            console.print(
-                f"{i}. [bold]{t.name}[/bold] — {t.location}\n"
-                f"   Début : {t.start_date} {t.start_time}\n"
-                f"   Fin   : {t.end_date} {t.end_time}\n"
-            )
+        # Extractions et force-injection de la date de la base de données
+        raw_rounds = raw_data.get("rounds", [])
+        for index, round_obj in enumerate(tournament.rounds):
+            if index < len(raw_rounds):
+                raw_time = raw_rounds[index].get("start_time", raw_rounds[index].get("date", ""))
 
-            if t.results:
-                console.print("   [bold green]Classement final :[/bold green]")
-                for pos, (player, score) in enumerate(t.results, start=1):
-                    console.print(f"      {pos}. {player} — {score} pts")
+                if isinstance(round_obj, dict):
+                    round_obj["start_time"] = raw_time
+                else:
+                    setattr(round_obj, "start_time", raw_time)
+                    setattr(round_obj, "date", raw_time)
+
+        # Calcul des scores pour le classement général
+        scores = {}
+        players_list = getattr(tournament, "players", [])
+        if not players_list:
+            players_list = list(players_data.keys())
+
+        for p_id in players_list:
+            scores[p_id] = 0.0
+
+        for round_obj in tournament.rounds:
+            if isinstance(round_obj, dict):
+                matches = round_obj.get("matches", [])
+            else:
+                matches = getattr(round_obj, "matches", [])
+
+            for match in matches:
+                if isinstance(match, dict):
+                    p1, s1 = match.get("player1"), match.get("score1", 0.0)
+                    p2, s2 = match.get("player2"), match.get("score2", 0.0)
+                elif hasattr(match, "player1"):
+                    p1, s1 = match.player1, getattr(match, "score1", 0.0)
+                    p2, s2 = match.player2, getattr(match, "score2", 0.0)
+                else:
+                    p1, s1 = match[0][0], match[0][1]
+                    p2, s2 = match[1][0], match[1][1]
+
+                # CORRECTION E701 : Séparation des instructions sur des lignes distinctes après les deux-points
+                if p1 in scores:
+                    scores[p1] += float(s1)
+                if p2 in scores:
+                    scores[p2] += float(s2)
+
+        ranking = []
+        for p_id, score in scores.items():
+            player_name = players_data.get(p_id, "Joueur Inconnu")
+            ranking.append((p_id, score, player_name))
+
+        ranking.sort(key=lambda x: x[1], reverse=True)
+
+        self.view.show_full_tournament_report(tournament, ranking)

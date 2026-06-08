@@ -7,42 +7,28 @@ console = Console()
 
 
 class RoundView:
+    """Gère l'affichage et les saisies liées aux rounds et aux matchs."""
 
-    # --------------------------------------------------------------
-    # Affichage du début d’un round
-    # --------------------------------------------------------------
-    def round_started(self, round_obj):
-        console.print(
-            Panel.fit(
-                f"[bold cyan]=== Début du {round_obj.name} ===[/bold cyan]\n"
-                f"[dim]Veuillez saisir les résultats des matchs[/dim]"
-            )
+    def ask_match_result(self, match):
+        """Demande le résultat d'un match et applique un contrôle de saisie strict."""
+
+        # Récupération propre des identifiants des joueurs
+        p1 = match.player1 if hasattr(match, "player1") else match.get("player1", "Joueur 1")
+        p2 = match.player2 if hasattr(match, "player2") else match.get("player2", "Joueur 2")
+
+        match_text = (
+            f"[bold white][1][/bold white] [green]{p1}[/green]\n"
+            f"[bold white][2][/bold white] [green]{p2}[/green]\n\n"
+            f"[bold yellow]Options :[/bold yellow] "
+            f"[cyan][1][/cyan] Victoire {p1} | [cyan][2][/cyan] Victoire {p2} | [cyan][N][/cyan] Match Nul"
         )
 
-    # --------------------------------------------------------------
-    # Détermination du vainqueur d’un match (Système 1, N, 2)
-    # --------------------------------------------------------------
-    def ask_match_result(self, match):
-
-        # Demande directement le vainqueur du match.
-        # Retourne un tuple (score1, score2) automatiquement calculé.
+        console.print(Panel(match_text, title="Résultat du match", border_style="blue"))
 
         while True:
-            console.print(
-                Panel.fit(
-                    f"[bold cyan]Résultat du match[/bold cyan]\n\n"
-                    f"[white][1] {match.player1}[/white] vs [white][2] {match.player2}[/white]\n\n"
-                    f"[yellow]Options : [1] Victoire J1 | [N] Match Nul | [2] Victoire J2[/yellow]"
-                )
-            )
+            choice = console.input("[bold yellow]Votre choix (1, 2 ou N) : [/bold yellow]").strip().upper()
 
-            choice = console.input("[bold yellow]Votre choix (1, N ou 2) : [/bold yellow]").strip().upper()
+            if choice in ["1", "2", "N"]:
+                return choice
 
-            if choice == "1":
-                return 1.0, 0.0  # Joueur 1 gagne, Joueur 2 perd
-            elif choice == "N" or choice == "0":
-                return 0.5, 0.5  # Match nul
-            elif choice == "2":
-                return 0.0, 1.0  # Joueur 1 perd, Joueur 2 gagne
-            else:
-                console.print("[red]Choix invalide ! Veuillez taper 1, N, ou 2.[/red]")
+            console.print("[red]❌ Saisie invalide ! Vous devez obligatoirement entrer 1, 2 ou N.[/red]")
