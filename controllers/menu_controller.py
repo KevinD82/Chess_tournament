@@ -3,33 +3,26 @@
 from controllers.player_controller import PlayerController
 from controllers.tournament_controller import TournamentController
 from controllers.report_controller import ReportController
-
+from views.menu_view import MenuView
 from rich.console import Console
-from rich.panel import Panel
 
 console = Console()
 
 
-# --------------------------------------------------------------
-# Menu principal
-# --------------------------------------------------------------
 class MenuController:
+    """Contrôleur principal gérant l'aiguillage et la navigation de l'application."""
 
     def __init__(self):
+        """Initialise les sous-contrôleurs et la vue principale des menus."""
         self.player_controller = PlayerController()
         self.tournament_controller = TournamentController()
         self.report_controller = ReportController()
+        self.view = MenuView()
 
     def run(self):
+        """Lance la boucle principale de l'application."""
         while True:
-            console.print(Panel.fit("[bold cyan]=== MENU PRINCIPAL ===[/bold cyan]"))
-
-            console.print("1. Gestion des joueurs")
-            console.print("2. Gestion des tournois")
-            console.print("3. Rapports")
-            console.print("0. Quitter\n")
-
-            choice = console.input("[bold yellow]Votre choix : [/bold yellow]").strip()
+            choice = self.view.display_main_menu().strip()
 
             if choice == "1":
                 self.menu_players()
@@ -38,24 +31,15 @@ class MenuController:
             elif choice == "3":
                 self.menu_reports()
             elif choice == "0":
-                console.print("[green]Au revoir ![/green]")
+                self.view.exit_message()
                 break
             else:
                 console.print("[red]Choix invalide.[/red]")
 
-    # --------------------------------------------------------------
-    # Menu joueurs
-    # --------------------------------------------------------------
     def menu_players(self):
+        """Gère le sous-menu de gestion des joueurs."""
         while True:
-            console.print(Panel.fit("[bold cyan]=== GESTION DES JOUEURS ===[/bold cyan]"))
-
-            console.print("1. Ajouter un joueur")
-            console.print("2. Liste des joueurs")
-            console.print("3. Supprimer un joueur")
-            console.print("0. Retour\n")
-
-            choice = console.input("[bold yellow]Votre choix : [/bold yellow]").strip()
+            choice = self.view.display_player_menu().strip()
 
             if choice == "1":
                 self.player_controller.create_player()
@@ -68,20 +52,10 @@ class MenuController:
             else:
                 console.print("[red]Choix invalide.[/red]")
 
-    # --------------------------------------------------------------
-    # Menu tournois
-    # --------------------------------------------------------------
     def menu_tournaments(self):
+        """Gère le sous-menu de gestion des tournois."""
         while True:
-            console.print(Panel.fit("[bold cyan]=== GESTION DES TOURNOIS ===[/bold cyan]"))
-
-            console.print("1. Créer un tournoi")
-            console.print("2. Liste des tournois")
-            console.print("3. Lancer les matchs d’un tournoi")
-            console.print("4. Supprimer un tournoi")
-            console.print("0. Retour\n")
-
-            choice = console.input("[bold yellow]Votre choix : [/bold yellow]").strip()
+            choice = self.view.display_tournament_menu().strip()
 
             if choice == "1":
                 self.tournament_controller.create_tournament()
@@ -96,19 +70,10 @@ class MenuController:
             else:
                 console.print("[red]Choix invalide.[/red]")
 
-    # --------------------------------------------------------------
-    # Menu rapports
-    # --------------------------------------------------------------
     def menu_reports(self):
+        """Gère le sous-menu d'affichage des rapports."""
         while True:
-            console.print(Panel.fit("[bold cyan]=== RAPPORTS ===[/bold cyan]"))
-
-            console.print("1. Liste des tournois")
-            console.print("2. Détails d’un tournoi")
-            console.print("3. Historique complet")
-            console.print("0. Retour\n")
-
-            choice = console.input("[bold yellow]Votre choix : [/bold yellow]").strip()
+            choice = self.view.display_report_menu().strip()
 
             if choice == "1":
                 self.report_controller.list_tournaments()

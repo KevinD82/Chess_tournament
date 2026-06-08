@@ -6,23 +6,14 @@ from views.round_view import RoundView
 
 
 class RoundController:
-
-    # Le RoundController gère toute la logique liée aux rounds d’un tournoi :
-    # - création d’un nouveau round
-    # - saisie des résultats des matchs
-    # - mise à jour du tournoi dans la base de données
+    """Gère la logique liée aux rounds d'un tournoi (saisie des scores, persistance)."""
 
     def __init__(self):
+        """Initialise le contrôleur des rounds avec sa vue dédiée."""
         self.view = RoundView()
 
-    def create_round(self, tournament):
-        # Crée un nouveau round pour le tournoi donné.
-        pass
-
     def enter_results(self, tournament):
-
-        # Permet de définir le résultat du dernier round du tournoi.
-
+        """Permet de définir et d'enregistrer le résultat du dernier round du tournoi."""
         if not tournament.rounds:
             return
 
@@ -45,8 +36,5 @@ class RoundController:
         # On ré-écrase le dernier round mis à jour dans la liste du tournoi
         tournament.rounds[-1] = round_obj.to_dict()
 
-        # Sauvegarde du tournoi complet mis à jour dans TinyDB
-        tournaments_table.update(
-            tournament.to_dict(),
-            TournamentQuery.name == tournament.name
-        )
+        # Sauvegarde immédiate dans TinyDB
+        tournaments_table.update(tournament.to_dict(), TournamentQuery.name == tournament.name)
