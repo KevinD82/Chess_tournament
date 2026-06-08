@@ -9,6 +9,8 @@ console = Console()
 # --------------------------------------------------------------
 # Affichage du tournoi, des rounds et des résultats
 # --------------------------------------------------------------
+
+
 class TournamentView:
 
     def ask_tournament_info(self):
@@ -30,6 +32,7 @@ class TournamentView:
     # --------------------------------------------------------------
     # Affichage du tournoi
     # --------------------------------------------------------------
+
     def show_tournaments(self, tournaments):
         table = Table(title="Liste des tournois")
 

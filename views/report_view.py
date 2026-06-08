@@ -16,7 +16,6 @@ class ReportView:
     # Cette vue ne contient aucune logique métier.
     # Elle affiche uniquement les données fournies par ReportController.
 
-
     # ------------------------------------------------------------------
     # 1. Affichage de la liste des tournois
     # ------------------------------------------------------------------
