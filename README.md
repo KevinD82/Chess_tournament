@@ -71,7 +71,7 @@ python main.py
 
 ### Générer le rapport :
 ```
-flake8 --format=html --htmldir=flake8-report
+flake8 --format=html --htmldir=flake8_rapport
 ```
 
 ### Le rapport sera disponible ici :
