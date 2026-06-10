@@ -38,7 +38,7 @@ class RoundView:
 
         # --- Saisie utilisateur ---
         while True:
-            choice = console.input("[bold white]Votre choix : [/bold white]").strip().upper()
+            choice = console.input("[bold yellow]Votre choix : [/bold yellow]").strip().upper()
 
             if choice in ("1", "2", "N"):
                 return choice
