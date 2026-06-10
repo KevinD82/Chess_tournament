@@ -1,47 +1,46 @@
-# views/round_view.py
-
 from rich.console import Console
-from rich.panel import Panel
+from rich.table import Table
 
 console = Console()
 
 
 class RoundView:
-    """Gère l'affichage et les saisies liées aux rounds et aux matchs."""
+    """Saisie des résultats de match."""
 
     def ask_match_result(self, match, players_dict=None):
-        """Demande le résultat d'un match avec contrôle de saisie strict et affiche les noms complets."""
-
-        # Récupération sécurisée des identifiants nationaux des deux joueurs
-        p1_id = match.player1 if hasattr(match, "player1") else match.get("player1", "Joueur 1")
-        p2_id = match.player2 if hasattr(match, "player2") else match.get("player2", "Joueur 2")
-
-        # Conversion de l'ID en "NOM Prénom (ID)" si le dictionnaire des joueurs est disponible
-        if players_dict and p1_id in players_dict:
-            p1_display = f"{players_dict[p1_id].last_name} {players_dict[p1_id].first_name} ({p1_id})"
-        else:
-            p1_display = p1_id
-
-        if players_dict and p2_id in players_dict:
-            p2_display = f"{players_dict[p2_id].last_name} {players_dict[p2_id].first_name} ({p2_id})"
-        else:
-            p2_display = p2_id
-
-        # Construction du panneau d'affichage avec Rich
-        match_text = (
-            f"[bold white][1][/bold white] [green]{p1_display}[/green]\n"
-            f"[bold white][2][/bold white] [green]{p2_display}[/green]\n\n"
-            f"[bold yellow]Options :[/bold yellow] "
-            f"[cyan][1][/cyan] Victoire {p1_id} | [cyan][2][/cyan] Victoire {p2_id} | [cyan][N][/cyan] Match Nul"
+        # Récupération des noms complets si disponibles
+        p1 = (
+            players_dict.get(match.player1).last_name + " " +
+            players_dict.get(match.player1).first_name
+            if players_dict and match.player1 in players_dict
+            else match.player1
         )
 
-        console.print(Panel(match_text, title="Résultat du match", border_style="blue"))
+        p2 = (
+            players_dict.get(match.player2).last_name + " " +
+            players_dict.get(match.player2).first_name
+            if players_dict and match.player2 in players_dict
+            else match.player2
+        )
 
-        # Boucle de contrôle de saisie stricte (uniquement 1, 2 ou N)
+        console.print(f"\n[bold cyan]Match : {p1} vs {p2}[/bold cyan]")
+
+        # --- Tableau des choix ---
+        table = Table(show_header=True, header_style="bold cyan", border_style="dim")
+        table.add_column("Choix", justify="center")
+        table.add_column("Signification", justify="left")
+
+        table.add_row("[bold bright_blue]1[/bold bright_blue]", f"Victoire {p1}")
+        table.add_row("[bold green]2[/bold green]", f"Victoire {p2}")
+        table.add_row("[bold yellow]N[/bold yellow]", "Match nul")
+
+        console.print(table)
+
+        # --- Saisie utilisateur ---
         while True:
-            choice = console.input("[bold yellow]Votre choix (1, 2 ou N) : [/bold yellow]").strip().upper()
+            choice = console.input("[bold white]Votre choix : [/bold white]").strip().upper()
 
-            if choice in ["1", "2", "N"]:
+            if choice in ("1", "2", "N"):
                 return choice
 
-            console.print("[red]❌ Saisie invalide ! Vous devez obligatoirement entrer 1, 2 ou N.[/red]")
+            console.print("[red]Choix invalide.[/red]")

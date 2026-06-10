@@ -1,23 +1,27 @@
 # main.py
+"""
+Point d'entrée principal de l'application.
 
-# Le MenuController est le point d'entrée principal de l'application.
-# Il gère la navigation entre toutes les fonctionnalités :
-# - gestion des joueurs
-# - gestion des tournois
-# - rapports
+Ce fichier ne contient volontairement aucune logique métier.
+Il instancie simplement le contrôleur principal (MenuController)
+et lance la boucle de navigation de l'application.
+
+Architecture MVC :
+- Modèles  : données (joueurs, tournois, rounds…)
+- Vues     : affichage et saisie utilisateur
+- Contrôleurs : logique métier et navigation
+
+Ici, main.py sert uniquement à démarrer l'application.
+"""
+
 from controllers.menu_controller import MenuController
 
 
 def main():
-    """
-    Fonction principale de l'application.
-    Elle instancie le contrôleur du menu et lance la boucle principale.
-    """
+    """Instancie le contrôleur principal et lance l'application."""
     app = MenuController()
-    app.run()  # Démarre l'application (boucle infinie jusqu'à "Quitter")
+    app.run()
 
-
-# Ce bloc garantit que main() n'est exécuté que si le fichier est lancé directement.
 
 if __name__ == "__main__":
     main()
