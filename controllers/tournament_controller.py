@@ -1,5 +1,3 @@
-# controllers/tournament_controller.py
-
 import random
 from datetime import datetime
 from models.tournament import Tournament
@@ -14,15 +12,13 @@ console = Console()
 
 
 class TournamentController:
-    """Gère la logique métier des tournois : création, appariements et blocages de rounds."""
+    """Logique métier des tournois : création, rounds, blocages."""
 
     def __init__(self):
-        """Initialise le contrôleur avec sa vue dédiée et le contrôleur des rounds."""
         self.view = TournamentView()
         self.round_controller = RoundController()
 
     def create_tournament(self):
-        """Gère le formulaire de création de tournoi et l'enregistre en base."""
         data = self.view.ask_tournament_info()
         if not data:
             return
@@ -32,12 +28,10 @@ class TournamentController:
         console.print("[green]Tournoi créé avec succès ![/green]")
 
     def list_tournaments(self):
-        """Récupère et affiche tous les tournois enregistrés."""
         tournaments = [Tournament.from_dict(t) for t in tournaments_table.all()]
         self.view.show_tournaments(tournaments)
 
     def manage_tournament(self):
-        """Menu de pilotage d'un tournoi spécifique (Lancement round ou Saisie scores)."""
         tournaments = [Tournament.from_dict(t) for t in tournaments_table.all()]
         if not tournaments:
             console.print("[yellow]Aucun tournoi disponible.[/yellow]")
@@ -53,7 +47,6 @@ class TournamentController:
         selected_tournament_name = tournaments[int(choice) - 1].name
 
         while True:
-            # Rechargement forcé de la base de données TinyDB à chaque itération
             db_data = tournaments_table.get(TournamentQuery.name == selected_tournament_name)
             if not db_data:
                 console.print("[red]Erreur : Le tournoi est introuvable en base.[/red]")
@@ -78,21 +71,17 @@ class TournamentController:
                 console.print("[red]Choix invalide.[/red]")
 
     def next_round(self, tournament):
-        """Génère le round suivant si et seulement si le round précédent est clos."""
         total_rounds = getattr(tournament, "number_of_rounds", getattr(tournament, "num_rounds", 3))
 
-        # --- VERIFICATION BLINDÉE ET ULTRA-COMPATIBLE DES SCORES ---
         if tournament.rounds:
             last_round = tournament.rounds[-1]
 
-            # Extraction de la liste des matchs
             if isinstance(last_round, dict):
                 matches_to_check = last_round.get('matches', [])
             else:
                 matches_to_check = getattr(last_round, 'matches', [])
 
             for match in matches_to_check:
-                # Lecture adaptative : Objet Match, Dictionnaire ou Tuple/Liste
                 if hasattr(match, "score1"):
                     s1, s2 = match.score1, match.score2
                 elif isinstance(match, dict):
@@ -104,7 +93,6 @@ class TournamentController:
                     except (IndexError, TypeError):
                         s1, s2 = 0.0, 0.0
 
-                # Si un match a ses deux scores à 0.0 (ou None/chaîne vide convertie), on bloque
                 try:
                     val1 = float(s1) if s1 is not None else 0.0
                     val2 = float(s2) if s2 is not None else 0.0
@@ -133,7 +121,7 @@ class TournamentController:
 
         for i in range(0, len(all_players) - 1, 2):
             p1 = all_players[i]
-            p2 = all_players[i+1]
+            p2 = all_players[i + 1]
 
             match_obj = Match(
                 player1=p1['national_id'],
@@ -154,25 +142,22 @@ class TournamentController:
 
         tournament.rounds.append(new_round_obj)
 
-        # On écrase proprement TinyDB avec la version sérialisée en dictionnaire
         tournaments_table.update(
             {"rounds": [r.to_dict() if hasattr(r, "to_dict") else r for r in tournament.rounds]},
             TournamentQuery.name == tournament.name
         )
 
-        console.print(f"[green]✅ Le {new_round_obj.name} a été généré avec succès à {current_now_str} ![/green]")
+        console.print(f"[green]Le {new_round_obj.name} a été généré à {current_now_str} ![/green]")
 
     def play_round_scores(self, tournament):
-        """Permet de saisir les scores du round actif s'il y en a un en attente."""
         if not tournament.rounds:
             console.print("[yellow]Aucun round n'a encore été généré pour ce tournoi.[/yellow]")
             return
 
         self.round_controller.enter_results(tournament)
-        console.print("[green]🎉 Scores du round enregistrés et sauvegardés en base ![/green]")
+        console.print("[green]Scores du round enregistrés ![/green]")
 
     def delete_tournament(self):
-        """Supprime un tournoi de la base de données."""
         tournaments = [Tournament.from_dict(t) for t in tournaments_table.all()]
         if not tournaments:
             console.print("[yellow]Aucun tournoi enregistré.[/yellow]")

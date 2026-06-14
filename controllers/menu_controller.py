@@ -1,5 +1,3 @@
-# controllers/menu_controller.py
-
 from controllers.player_controller import PlayerController
 from controllers.tournament_controller import TournamentController
 from controllers.report_controller import ReportController
@@ -10,17 +8,15 @@ console = Console()
 
 
 class MenuController:
-    """Contrôleur principal gérant l'aiguillage et la navigation de l'application."""
+    """Contrôleur principal de navigation."""
 
     def __init__(self):
-        """Initialise les sous-contrôleurs et la vue principale des menus."""
         self.player_controller = PlayerController()
         self.tournament_controller = TournamentController()
         self.report_controller = ReportController()
         self.view = MenuView()
 
     def run(self):
-        """Lance la boucle principale de l'application."""
         while True:
             choice = self.view.display_main_menu().strip()
 
@@ -37,7 +33,6 @@ class MenuController:
                 console.print("[red]Choix invalide.[/red]")
 
     def menu_players(self):
-        """Gère le sous-menu de gestion des joueurs."""
         while True:
             choice = self.view.display_player_menu().strip()
 
@@ -53,7 +48,6 @@ class MenuController:
                 console.print("[red]Choix invalide.[/red]")
 
     def menu_tournaments(self):
-        """Gère le sous-menu de gestion des tournois."""
         while True:
             choice = self.view.display_tournament_menu().strip()
 
@@ -71,17 +65,21 @@ class MenuController:
                 console.print("[red]Choix invalide.[/red]")
 
     def menu_reports(self):
-        """Gère le sous-menu d'affichage des rapports."""
         while True:
             choice = self.view.display_report_menu().strip()
 
             if choice == "1":
-                self.report_controller.list_tournaments()
+                # Correction : on utilise le contrôleur des tournois
+                self.tournament_controller.list_tournaments()
+
             elif choice == "2":
                 self.report_controller.tournament_details()
+
             elif choice == "3":
                 self.report_controller.full_history()
+
             elif choice == "0":
                 return
+
             else:
                 console.print("[red]Choix invalide.[/red]")

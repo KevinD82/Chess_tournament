@@ -1,9 +1,5 @@
-# models/match.py
-
 class Match:
-    """
-    Un match oppose deux joueurs.
-    """
+    """Un match oppose deux joueurs."""
 
     def __init__(self, player1, player2, score1=0, score2=0):
         self.player1 = player1

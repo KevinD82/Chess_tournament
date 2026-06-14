@@ -1,5 +1,3 @@
-# controllers/report_controller.py
-
 from models.tournament import Tournament
 from models.player import Player
 from database import tournaments_table, players_table
@@ -10,14 +8,12 @@ console = Console()
 
 
 class ReportController:
-    """Gère l'extraction des données et le calcul des classements pour les rapports."""
+    """Extraction des données et calcul des classements pour les rapports."""
 
     def __init__(self):
-        """Initialise le contrôleur de rapports avec sa vue."""
         self.view = ReportView()
 
     def run(self):
-        """Boucle principale du menu des rapports."""
         while True:
             choice = self.view.display_report_menu()
             if choice == "1":
@@ -30,7 +26,6 @@ class ReportController:
                 console.print("[red]Choix invalide.[/red]")
 
     def _select_tournament_with_raw_data(self):
-        """Sélectionne un tournoi et conserve ses données brutes de la base TinyDB."""
         raw_tournaments = tournaments_table.all()
         if not raw_tournaments:
             console.print("[yellow]Aucun tournoi enregistré.[/yellow]")
@@ -49,15 +44,12 @@ class ReportController:
         return tournament_obj, raw_data
 
     def tournament_details(self):
-        """Alias pour le MenuController."""
         self.tournament_details_report()
 
     def full_history(self):
-        """Alias pour le MenuController."""
         self.full_tournament_report()
 
     def tournament_details_report(self):
-        """Génère le rapport des détails (Dates & Joueurs présents)."""
         tournament, raw_data = self._select_tournament_with_raw_data()
         if not tournament:
             return
@@ -65,11 +57,8 @@ class ReportController:
         players_dict = {p['national_id']: Player.from_dict(p) for p in players_table.all()}
 
         tournament_players = getattr(
-            tournament, "players", getattr(
-                tournament, "players_list", getattr(
-                    tournament, "registered_players", []
-                )
-            )
+            tournament, "players",
+            getattr(tournament, "players_list", getattr(tournament, "registered_players", []))
         )
 
         if not tournament_players and tournament.rounds:
@@ -96,30 +85,25 @@ class ReportController:
         self.view.show_tournament_details(tournament, players_dict)
 
     def full_tournament_report(self):
-        """Génère le rapport complet avec injection stricte de la date et de l'heure brute."""
         tournament, raw_data = self._select_tournament_with_raw_data()
         if not tournament:
             return
 
-        # Dictionnaire complet pour les correspondances d'affichage des noms
         players_data = {
             p['national_id']: f"{p['last_name']} {p['first_name']}"
             for p in players_table.all()
         }
 
-        # Extractions et force-injection de la date de la base de données
         raw_rounds = raw_data.get("rounds", [])
         for index, round_obj in enumerate(tournament.rounds):
             if index < len(raw_rounds):
                 raw_time = raw_rounds[index].get("start_time", raw_rounds[index].get("date", ""))
-
                 if isinstance(round_obj, dict):
                     round_obj["start_time"] = raw_time
                 else:
                     setattr(round_obj, "start_time", raw_time)
                     setattr(round_obj, "date", raw_time)
 
-        # Calcul des scores pour le classement général
         scores = {}
         players_list = getattr(tournament, "players", [])
         if not players_list:
@@ -156,6 +140,4 @@ class ReportController:
             ranking.append((p_id, score, player_name))
 
         ranking.sort(key=lambda x: x[1], reverse=True)
-
-        # Envoi de la table des correspondances à la vue
         self.view.show_full_tournament_report(tournament, ranking, players_data)
