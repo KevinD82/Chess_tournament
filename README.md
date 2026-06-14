@@ -4,15 +4,19 @@ Gestionnaire de tournois d’échecs — Projet Python (Architecture MVC)
 ---
 
 ## 🎯 Objectif du projet
-Ce programme permet de gérer entièrement un tournoi d’échecs :
-- Création de tournois
-- Ajout et gestion des joueurs
-- Gestion des rounds et des matchs
-- Attribution des scores
-- Classement final
-- Sauvegarde et chargement via TinyDB
+Ce programme permet de gérer entièrement un tournoi d’échecs en utilisant un système Round‑Robin (tous les joueurs se rencontrent une fois).
+Il offre une interface console moderne grâce à Rich, une structure claire grâce à l’architecture MVC, et une persistance des données via TinyDB.
 
-Le projet suit une architecture **MVC (Model – View – Controller)** pour garantir une structure claire, maintenable et évolutive.
+Le gestionnaire permet :
+
+- Création et gestion de tournois
+- Ajout et gestion des joueurs
+- Génération automatique des rounds (Round‑Robin)
+- Gestion des matchs et attribution des scores
+- Classement final automatique
+- Historique complet des tournois
+- Rapports détaillés
+- Sauvegarde et chargement via TinyDB
 
 ---
 
