@@ -134,7 +134,7 @@ class TournamentController:
                     s2 = match.score2
 
                 if float(s1) == 0.0 and float(s2) == 0.0:
-                    console.print("[red]⚠️ Vous devez saisir les scores du round actuel avant d'en générer un nouveau.[/red]")
+                    console.print("[red]⚠️ Saisir les scores avant de générer un nouveau round.[/red]")
                     return
 
         # Vérifier nombre de rounds

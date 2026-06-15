@@ -1,6 +1,5 @@
 from rich.console import Console
 from tinydb import where
-from models.match import Match
 from database import tournaments_table, players_table, TournamentQuery
 
 console = Console()
