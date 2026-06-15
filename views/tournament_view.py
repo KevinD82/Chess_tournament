@@ -99,7 +99,6 @@ class TournamentView:
         console.print(table)
 
     def select_tournament(self, tournaments):
-        """Permet de choisir un tournoi dans une liste."""
         self.show_tournaments(tournaments)
         choice = console.input("\nNuméro du tournoi : ").strip()
 
@@ -114,8 +113,10 @@ class TournamentView:
 
         return tournaments[index]
 
+    # ---------------------------------------------------------
+    # SÉLECTION GUIDÉE DES 4 JOUEURS
+    # ---------------------------------------------------------
     def select_players(self, players):
-        """Sélectionne les joueurs participants à un tournoi (ex : 4 joueurs)."""
         console.print("\n[bold cyan]Sélection des joueurs pour le tournoi[/bold cyan]")
 
         table = Table(show_header=True, header_style="bold cyan", border_style="dim")
@@ -132,20 +133,29 @@ class TournamentView:
 
         console.print(table)
 
-        console.print("[yellow]Entrez les numéros des joueurs séparés par des virgules (ex : 1,2,3,4).[/yellow]")
-        choice = console.input("Votre sélection : ").strip()
-
-        try:
-            indexes = [int(x.strip()) - 1 for x in choice.split(",")]
-        except ValueError:
-            console.print("[red]Sélection invalide.[/red]")
-            return []
-
         selected = []
-        for idx in indexes:
-            if 0 <= idx < len(players):
-                selected.append(players[idx])
-            else:
-                console.print(f"[red]Numéro {idx+1} hors liste, ignoré.[/red]")
+        used_indexes = set()
+
+        for n in range(1, 5):
+            while True:
+                choice = console.input(f"Numéro du joueur {n} : ").strip()
+
+                if not choice.isdigit():
+                    console.print("[red]Veuillez entrer un numéro valide.[/red]")
+                    continue
+
+                index = int(choice) - 1
+
+                if index < 0 or index >= len(players):
+                    console.print("[red]Numéro hors liste.[/red]")
+                    continue
+
+                if index in used_indexes:
+                    console.print("[red]Ce joueur est déjà sélectionné ![/red]")
+                    continue
+
+                used_indexes.add(index)
+                selected.append(players[index])
+                break
 
         return selected

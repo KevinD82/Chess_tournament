@@ -1,40 +1,54 @@
+from rich.console import Console
 from controllers.player_controller import PlayerController
 from controllers.tournament_controller import TournamentController
 from controllers.report_controller import ReportController
-from views.menu_view import MenuView
-from rich.console import Console
+from views.tournament_view import TournamentView
+from views.player_view import PlayerView
 
 console = Console()
 
 
 class MenuController:
-    """Contrôleur principal de navigation."""
+    """Menu principal et navigation générale."""
 
     def __init__(self):
         self.player_controller = PlayerController()
         self.tournament_controller = TournamentController()
         self.report_controller = ReportController()
-        self.view = MenuView()
+        self.tournament_view = TournamentView()
+        self.player_view = PlayerView()
 
     def run(self):
         while True:
-            choice = self.view.display_main_menu().strip()
+            console.print("\n[bold cyan]=== MENU PRINCIPAL ===[/bold cyan]")
+            console.print("1. Gestion des joueurs")
+            console.print("2. Gestion des tournois")
+            console.print("3. Rapports")
+            console.print("0. Quitter")
+
+            choice = console.input("\n[bold yellow]Votre choix : [/bold yellow]").strip()
 
             if choice == "1":
-                self.menu_players()
+                self.player_menu()
             elif choice == "2":
-                self.menu_tournaments()
+                self.tournament_menu()
             elif choice == "3":
-                self.menu_reports()
+                self.report_menu()
             elif choice == "0":
-                self.view.exit_message()
+                console.print("[green]Au revoir ![/green]")
                 break
             else:
                 console.print("[red]Choix invalide.[/red]")
 
-    def menu_players(self):
+    def player_menu(self):
         while True:
-            choice = self.view.display_player_menu().strip()
+            console.print("\n[bold cyan]=== GESTION DES JOUEURS ===[/bold cyan]")
+            console.print("1. Créer un joueur")
+            console.print("2. Liste des joueurs")
+            console.print("3. Supprimer un joueur")
+            console.print("0. Retour")
+
+            choice = console.input("\n[bold yellow]Votre choix : [/bold yellow]").strip()
 
             if choice == "1":
                 self.player_controller.create_player()
@@ -43,43 +57,46 @@ class MenuController:
             elif choice == "3":
                 self.player_controller.delete_player()
             elif choice == "0":
-                return
+                break
             else:
                 console.print("[red]Choix invalide.[/red]")
 
-    def menu_tournaments(self):
+    def tournament_menu(self):
         while True:
-            choice = self.view.display_tournament_menu().strip()
+            choice = self.tournament_view.display_tournament_menu()
 
             if choice == "1":
                 self.tournament_controller.create_tournament()
             elif choice == "2":
                 self.tournament_controller.list_tournaments()
             elif choice == "3":
-                self.tournament_controller.manage_tournament()
+                self.tournament_controller.add_players_to_tournament()
             elif choice == "4":
+                self.tournament_controller.manage_tournament()
+            elif choice == "5":
                 self.tournament_controller.delete_tournament()
             elif choice == "0":
-                return
+                break
             else:
                 console.print("[red]Choix invalide.[/red]")
 
-    def menu_reports(self):
+    def report_menu(self):
         while True:
-            choice = self.view.display_report_menu().strip()
+            console.print("\n[bold cyan]=== RAPPORTS ===[/bold cyan]")
+            console.print("1. Liste des tournois")
+            console.print("2. Détail d’un tournoi")
+            console.print("3. Historique complet")
+            console.print("0. Retour")
+
+            choice = console.input("\n[bold yellow]Votre choix : [/bold yellow]").strip()
 
             if choice == "1":
-                # Correction : on utilise le contrôleur des tournois
-                self.tournament_controller.list_tournaments()
-
+                self.report_controller.report_tournaments()
             elif choice == "2":
-                self.report_controller.tournament_details()
-
+                self.report_controller.report_tournament_details()
             elif choice == "3":
-                self.report_controller.full_history()
-
+                self.report_controller.report_full_history()
             elif choice == "0":
-                return
-
+                break
             else:
                 console.print("[red]Choix invalide.[/red]")

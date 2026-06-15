@@ -1,103 +1,104 @@
-from models.round import Round
-from models.match import Match
-from database import tournaments_table, TournamentQuery, players_table
-from models.player import Player
-from views.round_view import RoundView
 from rich.console import Console
+from tinydb import where
+from models.match import Match
+from database import tournaments_table, players_table, TournamentQuery
 
 console = Console()
 
 
 class RoundController:
-    """Saisie des résultats et mise à jour des scores d'un round."""
+    """Gestion des rounds : saisie des scores avec système 1N2 + modification."""
 
     def __init__(self):
-        self.view = RoundView()
+        pass
 
     def enter_results(self, tournament):
-        """Permet de saisir les résultats du round actif, avec protection contre la ressaisie."""
+        """Saisie des scores pour le round en cours."""
+
         if not tournament.rounds:
-            console.print("[yellow]Aucun round disponible pour ce tournoi.[/yellow]")
+            console.print("[yellow]Aucun round à mettre à jour.[/yellow]")
             return
 
-        # Dictionnaire des joueurs pour affichage
-        players_dict = {p['national_id']: Player.from_dict(p) for p in players_table.all()}
+        current_round = tournament.rounds[-1]
 
-        # Dernier round
-        round_obj = tournament.rounds[-1]
+        console.print(f"\n[bold cyan]=== Saisie des scores : {current_round.name} ===[/bold cyan]")
 
-        # Conversion dict → objet Round si nécessaire
-        if isinstance(round_obj, dict):
-            round_obj = Round.from_dict(round_obj)
-            tournament.rounds[-1] = round_obj
+        for match in current_round.matches:
 
-        console.print(f"\n[bold cyan]--- SAISIE DES RÉSULTATS : {round_obj.name} ---[/bold cyan]")
-
-        updated_matches = []
-
-        # Parcours des matchs
-        for match in round_obj.matches:
-
-            # Normalisation du match (dict → objet Match)
+            # ---------------------------------------------------------
+            # Gestion dict OU objet Match
+            # ---------------------------------------------------------
             if isinstance(match, dict):
-                match_obj = Match(
-                    player1=match.get("player1"),
-                    score1=float(match.get("score1", 0.0)),
-                    player2=match.get("player2"),
-                    score2=float(match.get("score2", 0.0))
-                )
+                player1_id = match.get("player1")
+                player2_id = match.get("player2")
+                score1 = match.get("score1", 0.0)
+                score2 = match.get("score2", 0.0)
             else:
-                match_obj = match
+                player1_id = match.player1
+                player2_id = match.player2
+                score1 = match.score1
+                score2 = match.score2
 
-            # --- Vérification si le match a déjà été joué ---
-            if match_obj.score1 != 0.0 or match_obj.score2 != 0.0:
+            # Récupération des joueurs
+            p1 = players_table.get(where("national_id") == player1_id)
+            p2 = players_table.get(where("national_id") == player2_id)
+
+            name1 = f"{p1['first_name']} {p1['last_name']}"
+            name2 = f"{p2['first_name']} {p2['last_name']}"
+
+            console.print(f"\nMatch : [bold]{name1}[/bold] vs [bold]{name2}[/bold]")
+
+            # ---------------------------------------------------------
+            # Si les scores sont déjà renseignés → demander modification
+            # ---------------------------------------------------------
+            if float(score1) != 0.0 or float(score2) != 0.0:
                 console.print(
-                    f"[yellow]Résultat déjà enregistré :[/yellow] "
-                    f"{match_obj.player1} ({match_obj.score1}) vs {match_obj.player2} ({match_obj.score2})"
+                    f"[yellow]Scores déjà enregistrés : {name1} {score1} - {score2} {name2}[/yellow]"
                 )
-
-                modify = console.input(
-                    "[bold white]Souhaitez-vous modifier ce résultat ? (O/N) : [/bold white]"
-                ).strip().upper()
-
+                modify = console.input("Modifier ? (O/N) : ").strip().upper()
                 if modify != "O":
-                    # On conserve les scores existants
-                    updated_matches.append(match_obj.to_dict())
-                    continue  # Passe au match suivant
+                    continue
 
-            # --- Saisie normale du résultat ---
-            result = self.view.ask_match_result(match_obj, players_dict=players_dict)
+            # ---------------------------------------------------------
+            # Système 1 / N / 2
+            # ---------------------------------------------------------
+            console.print("[cyan]Entrez le résultat :[/cyan]")
+            console.print("1 = victoire joueur 1")
+            console.print("N = nul")
+            console.print("2 = victoire joueur 2")
 
-            if result == "1":
-                match_obj.score1 = 1.0
-                match_obj.score2 = 0.0
-            elif result == "2":
-                match_obj.score1 = 0.0
-                match_obj.score2 = 1.0
-            elif result == "N":
-                match_obj.score1 = 0.5
-                match_obj.score2 = 0.5
+            while True:
+                result = console.input("Résultat (1/N/2) : ").strip().upper()
 
-            updated_matches.append(match_obj.to_dict())
+                if result == "1":
+                    s1, s2 = 1.0, 0.0
+                    break
+                elif result == "N":
+                    s1, s2 = 0.5, 0.5
+                    break
+                elif result == "2":
+                    s1, s2 = 0.0, 1.0
+                    break
+                else:
+                    console.print("[red]Choix invalide.[/red]")
 
-        # Mise à jour du round en mémoire
-        if isinstance(tournament.rounds[-1], Round):
-            tournament.rounds[-1].matches = updated_matches
-        else:
-            tournament.rounds[-1]["matches"] = updated_matches
+            # Mise à jour des scores
+            if isinstance(match, dict):
+                match["score1"] = s1
+                match["score2"] = s2
+            else:
+                match.score1 = s1
+                match.score2 = s2
 
-        # Sérialisation pour TinyDB
-        serialized_rounds = []
-        for r in tournament.rounds:
-            if hasattr(r, "to_dict"):
-                serialized_rounds.append(r.to_dict())
-            elif isinstance(r, dict):
-                serialized_rounds.append(r)
-
-        # Mise à jour en base
+        # Sauvegarde en base
         tournaments_table.update(
-            {"rounds": serialized_rounds},
+            {
+                "rounds": [
+                    r.to_dict() if hasattr(r, "to_dict") else r
+                    for r in tournament.rounds
+                ]
+            },
             TournamentQuery.name == tournament.name
         )
 
-        console.print("[green]Scores enregistrés avec succès ![/green]")
+        console.print("\n[green]Scores enregistrés avec succès ![/green]")
