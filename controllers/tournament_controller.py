@@ -18,6 +18,7 @@ class TournamentController:
         self.view = TournamentView()
         self.round_controller = RoundController()
 
+    """creation d'un tournoi"""
     def create_tournament(self):
         data = self.view.ask_tournament_info()
         if not data:
@@ -27,10 +28,12 @@ class TournamentController:
         tournaments_table.insert(tournament.to_dict())
         console.print("[green]Tournoi créé avec succès ![/green]")
 
+    """liste des tournois"""
     def list_tournaments(self):
         tournaments = [Tournament.from_dict(t) for t in tournaments_table.all()]
         self.view.show_tournaments(tournaments)
 
+    """pilotage d'un tournoi"""
     def manage_tournament(self):
         tournaments = [Tournament.from_dict(t) for t in tournaments_table.all()]
         if not tournaments:
