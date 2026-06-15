@@ -12,8 +12,9 @@ class TournamentView:
         console.print("\n[bold cyan]=== GESTION DES TOURNOIS ===[/bold cyan]")
         console.print("1. Créer un tournoi")
         console.print("2. Liste des tournois")
-        console.print("3. Piloter un tournoi")
-        console.print("4. Supprimer un tournoi")
+        console.print("3. Ajouter des joueurs à un tournoi")
+        console.print("4. Piloter un tournoi")
+        console.print("5. Supprimer un tournoi")
         console.print("0. Retour")
         return console.input("\n[bold yellow]Votre choix : [/bold yellow]")
 
@@ -96,3 +97,55 @@ class TournamentView:
             )
 
         console.print(table)
+
+    def select_tournament(self, tournaments):
+        """Permet de choisir un tournoi dans une liste."""
+        self.show_tournaments(tournaments)
+        choice = console.input("\nNuméro du tournoi : ").strip()
+
+        if not choice.isdigit():
+            console.print("[red]Veuillez entrer un numéro valide.[/red]")
+            return None
+
+        index = int(choice) - 1
+        if index < 0 or index >= len(tournaments):
+            console.print("[red]Numéro hors liste.[/red]")
+            return None
+
+        return tournaments[index]
+
+    def select_players(self, players):
+        """Sélectionne les joueurs participants à un tournoi (ex : 4 joueurs)."""
+        console.print("\n[bold cyan]Sélection des joueurs pour le tournoi[/bold cyan]")
+
+        table = Table(show_header=True, header_style="bold cyan", border_style="dim")
+        table.add_column("N°", justify="center")
+        table.add_column("Nom")
+        table.add_column("National ID", justify="center")
+
+        for i, p in enumerate(players, 1):
+            table.add_row(
+                str(i),
+                f"{p['first_name']} {p['last_name']}",
+                p["national_id"]
+            )
+
+        console.print(table)
+
+        console.print("[yellow]Entrez les numéros des joueurs séparés par des virgules (ex : 1,2,3,4).[/yellow]")
+        choice = console.input("Votre sélection : ").strip()
+
+        try:
+            indexes = [int(x.strip()) - 1 for x in choice.split(",")]
+        except ValueError:
+            console.print("[red]Sélection invalide.[/red]")
+            return []
+
+        selected = []
+        for idx in indexes:
+            if 0 <= idx < len(players):
+                selected.append(players[idx])
+            else:
+                console.print(f"[red]Numéro {idx+1} hors liste, ignoré.[/red]")
+
+        return selected

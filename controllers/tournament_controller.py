@@ -1,5 +1,6 @@
 import random
 from datetime import datetime
+from tinydb import where
 from models.tournament import Tournament
 from models.round import Round
 from models.match import Match
@@ -12,7 +13,7 @@ console = Console()
 
 
 class TournamentController:
-    """Logique métier des tournois : création, rounds, blocages."""
+    """Logique métier des tournois : création, sélection des joueurs, rounds, blocages."""
 
     def __init__(self):
         self.view = TournamentView()
@@ -23,6 +24,7 @@ class TournamentController:
         if not data:
             return
 
+        # On crée le tournoi sans joueurs au départ
         tournament = Tournament(**data)
         tournaments_table.insert(tournament.to_dict())
         console.print("[green]Tournoi créé avec succès ![/green]")
@@ -30,6 +32,41 @@ class TournamentController:
     def list_tournaments(self):
         tournaments = [Tournament.from_dict(t) for t in tournaments_table.all()]
         self.view.show_tournaments(tournaments)
+
+    def add_players_to_tournament(self):
+        """Permet de sélectionner les joueurs participants à un tournoi (ex : 4 sur 100)."""
+        tournaments = [Tournament.from_dict(t) for t in tournaments_table.all()]
+        if not tournaments:
+            console.print("[yellow]Aucun tournoi disponible.[/yellow]")
+            return
+
+        # Sélection du tournoi
+        selected_tournament = self.view.select_tournament(tournaments)
+        if not selected_tournament:
+            console.print("[red]Sélection de tournoi invalide.[/red]")
+            return
+
+        # Récupération de tous les joueurs du club
+        all_players = players_table.all()
+        if not all_players:
+            console.print("[yellow]Aucun joueur enregistré.[/yellow]")
+            return
+
+        # Sélection des joueurs participants
+        selected_players = self.view.select_players(all_players)
+        if len(selected_players) != 4:
+            console.print("[red]Vous devez sélectionner exactement 4 joueurs.[/red]")
+            return
+
+        # On stocke les national_id des joueurs dans le tournoi
+        player_ids = [p["national_id"] for p in selected_players]
+
+        tournaments_table.update(
+            {"players": player_ids},
+            TournamentQuery.name == selected_tournament.name
+        )
+
+        console.print("[green]Les joueurs ont été ajoutés au tournoi.[/green]")
 
     def manage_tournament(self):
         tournaments = [Tournament.from_dict(t) for t in tournaments_table.all()]
@@ -71,8 +108,10 @@ class TournamentController:
                 console.print("[red]Choix invalide.[/red]")
 
     def next_round(self, tournament):
+        """Génère le prochain round en utilisant UNIQUEMENT les joueurs sélectionnés pour ce tournoi."""
         total_rounds = getattr(tournament, "number_of_rounds", getattr(tournament, "num_rounds", 3))
 
+        # Vérification que le round précédent a bien des scores
         if tournament.rounds:
             last_round = tournament.rounds[-1]
 
@@ -108,20 +147,32 @@ class TournamentController:
             console.print("[yellow]Ce tournoi est déjà terminé (tous les rounds ont été joués).[/yellow]")
             return
 
+        # NOUVELLE RÈGLE : on utilise uniquement les joueurs du tournoi
+        if not getattr(tournament, "players", []):
+            console.print("[red]Aucun joueur sélectionné pour ce tournoi.[/red]")
+            console.print("[yellow]Utilisez l'option 'Ajouter des joueurs au tournoi' avant de générer un round.[/yellow]")
+            return
+
+        # Récupération des joueurs à partir de leurs national_id
+        players_data = []
+        for nat_id in tournament.players:
+            p = players_table.get(where("national_id") == nat_id)
+            if p:
+                players_data.append(p)
+
+        if len(players_data) < 2:
+            console.print("[red]Erreur : Il n'y a pas assez de joueurs sélectionnés pour ce tournoi.[/red]")
+            return
+
         round_number = len(tournament.rounds) + 1
         console.print(f"\n[green]Génération du Round {round_number}...[/green]")
 
-        all_players = players_table.all()
-        if len(all_players) < 2:
-            console.print("[red]Erreur : Il n'y a pas assez de joueurs enregistrés.[/red]")
-            return
-
         matches_objects = []
-        random.shuffle(all_players)
+        random.shuffle(players_data)
 
-        for i in range(0, len(all_players) - 1, 2):
-            p1 = all_players[i]
-            p2 = all_players[i + 1]
+        for i in range(0, len(players_data) - 1, 2):
+            p1 = players_data[i]
+            p2 = players_data[i + 1]
 
             match_obj = Match(
                 player1=p1['national_id'],
@@ -143,7 +194,12 @@ class TournamentController:
         tournament.rounds.append(new_round_obj)
 
         tournaments_table.update(
-            {"rounds": [r.to_dict() if hasattr(r, "to_dict") else r for r in tournament.rounds]},
+            {
+                "rounds": [
+                    r.to_dict() if hasattr(r, "to_dict") else r
+                    for r in tournament.rounds
+                ]
+            },
             TournamentQuery.name == tournament.name
         )
 
