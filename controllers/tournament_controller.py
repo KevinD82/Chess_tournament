@@ -1,8 +1,6 @@
 # controllers/tournament_controller.py
 
-import random
 from datetime import datetime
-from tinydb import where
 from models.tournament import Tournament
 from models.round import Round
 from models.match import Match
@@ -16,18 +14,12 @@ console = Console()
 
 
 class TournamentController:
-    """Logique métier des tournois : création, sélection des joueurs, rounds, blocages."""
+    """Logique métier des tournois : création, rounds, blocages."""
 
     def __init__(self):
         self.view = TournamentView()
         self.round_controller = RoundController()
 
-<<<<<<< HEAD
-=======
-    # ---------------------------------------------------------
-    # CRÉATION
-    # ---------------------------------------------------------
->>>>>>> 1511e2a3c98dd82fcb10c2c42a980ae48edac3ad
     def create_tournament(self):
         """Création d'un tournoi."""
         data = self.view.ask_tournament_info()
@@ -38,56 +30,11 @@ class TournamentController:
         tournaments_table.insert(tournament.to_dict())
         console.print("[green]Tournoi créé avec succès ![/green]")
 
-<<<<<<< HEAD
-=======
-    # ---------------------------------------------------------
-    # LISTE
-    # ---------------------------------------------------------
->>>>>>> 1511e2a3c98dd82fcb10c2c42a980ae48edac3ad
     def list_tournaments(self):
         """Liste des tournois."""
         tournaments = [Tournament.from_dict(t) for t in tournaments_table.all()]
         self.view.show_tournaments(tournaments)
 
-<<<<<<< HEAD
-=======
-    # ---------------------------------------------------------
-    # AJOUT DES JOUEURS
-    # ---------------------------------------------------------
-    def add_players_to_tournament(self):
-        tournaments = [Tournament.from_dict(t) for t in tournaments_table.all()]
-        if not tournaments:
-            console.print("[yellow]Aucun tournoi disponible.[/yellow]")
-            return
-
-        selected_tournament = self.view.select_tournament(tournaments)
-        if not selected_tournament:
-            console.print("[red]Sélection de tournoi invalide.[/red]")
-            return
-
-        all_players = players_table.all()
-        if not all_players:
-            console.print("[yellow]Aucun joueur enregistré.[/yellow]")
-            return
-
-        selected_players = self.view.select_players(all_players)
-        if len(selected_players) != 4:
-            console.print("[red]Vous devez sélectionner exactement 4 joueurs.[/red]")
-            return
-
-        player_ids = [p["national_id"] for p in selected_players]
-
-        tournaments_table.update(
-            {"players": player_ids},
-            TournamentQuery.name == selected_tournament.name
-        )
-
-        console.print("[green]Les joueurs ont été ajoutés au tournoi.[/green]")
-
-    # ---------------------------------------------------------
-    # MENU PILOTAGE
-    # ---------------------------------------------------------
->>>>>>> 1511e2a3c98dd82fcb10c2c42a980ae48edac3ad
     def manage_tournament(self):
         """Pilotage et gestion des étapes d'un tournoi."""
         tournaments = [Tournament.from_dict(t) for t in tournaments_table.all()]
@@ -124,7 +71,6 @@ class TournamentController:
             else:
                 console.print("[red]Choix invalide.[/red]")
 
-<<<<<<< HEAD
     def add_players_to_tournament(self, tournament):
         """Sélectionne et ajoute exactement 4 joueurs actifs au tournoi."""
         if len(tournament.players) == 4:
@@ -133,7 +79,7 @@ class TournamentController:
 
         # Récupération de tous les joueurs et conversion en objets Player
         all_players = [Player.from_dict(p) for p in players_table.all()]
-        
+
         # On ne garde que les joueurs actifs
         active_players = [p for p in all_players if getattr(p, "is_active", True)]
 
@@ -169,7 +115,7 @@ class TournamentController:
                 s1 = m.get("score1") if isinstance(m, dict) else m.score1
                 s2 = m.get("score2") if isinstance(m, dict) else m.score2
                 if s1 == 0.0 and s2 == 0.0:
-                    console.print("[red]Erreur : Vous devez saisir les scores du round actuel avant de générer le suivant.[/red]")
+                    console.print("[red]Erreur : Saisir les scores du round avant de générer le round suivant.[/red]")
                     return
 
         # 2. ALGORITHME DE BERGER (Strict et fixe pour 4 joueurs)
@@ -198,105 +144,26 @@ class TournamentController:
             name=f"Round {current_round_number}",
             matches=round_matches,
             start_time=current_now_str,
-=======
-    # ---------------------------------------------------------
-    # GÉNÉRATION DU ROUND
-    # ---------------------------------------------------------
-    def next_round(self, tournament):
-        total_rounds = getattr(tournament, "number_of_rounds", 3)
-
-        # Vérifier si le round précédent est complété
-        if tournament.rounds:
-            last_round = tournament.rounds[-1]
-
-            for match in last_round.matches:
-
-                # Gestion dict OU objet Match
-                if isinstance(match, dict):
-                    s1 = match.get("score1", 0.0)
-                    s2 = match.get("score2", 0.0)
-                else:
-                    s1 = match.score1
-                    s2 = match.score2
-
-                if float(s1) == 0.0 and float(s2) == 0.0:
-                    console.print("[red]⚠️ Saisir les scores avant de générer un nouveau round.[/red]")
-                    return
-
-        # Vérifier nombre de rounds
-        if len(tournament.rounds) >= total_rounds:
-            console.print("[yellow]Tous les rounds ont déjà été joués.[/yellow]")
-            return
-
-        # Vérifier joueurs sélectionnés
-        if not getattr(tournament, "players", []):
-            console.print("[red]Aucun joueur sélectionné pour ce tournoi.[/red]")
-            return
-
-        # Charger les joueurs depuis la base
-        players_data = []
-        for nat_id in tournament.players:
-            p = players_table.get(where("national_id") == nat_id)
-            if p:
-                players_data.append(p)
-
-        random.shuffle(players_data)
-
-        # Génération des matchs
-        matches = []
-        for i in range(0, len(players_data) - 1, 2):
-            p1 = players_data[i]
-            p2 = players_data[i + 1]
-
-            matches.append(
-                Match(
-                    player1=p1["national_id"],
-                    score1=0.0,
-                    player2=p2["national_id"],
-                    score2=0.0
-                )
-            )
-
-        round_number = len(tournament.rounds) + 1
-        now = datetime.now().strftime("%d/%m/%Y %H:%M:%S")
-
-        new_round = Round(
-            name=f"Round {round_number}",
-            matches=matches,
-            start_time=now,
->>>>>>> 1511e2a3c98dd82fcb10c2c42a980ae48edac3ad
             end_time=""
         )
 
-        tournament.rounds.append(new_round)
+        tournament.rounds.append(new_round_obj)
 
-<<<<<<< HEAD
         # Enregistrement sérialisé complet dans TinyDB
-=======
-        # Sauvegarde en base
->>>>>>> 1511e2a3c98dd82fcb10c2c42a980ae48edac3ad
         tournaments_table.update(
-            {"rounds": [r.to_dict() for r in tournament.rounds]},
+            {"rounds": [r.to_dict() if hasattr(r, "to_dict") else r for r in tournament.rounds]},
             TournamentQuery.name == tournament.name
         )
 
-<<<<<<< HEAD
         console.print(f"[green]Le {new_round_obj.name} a été généré avec succès ![/green]")
-=======
-        console.print(f"[green]Round {round_number} généré avec succès ![/green]")
->>>>>>> 1511e2a3c98dd82fcb10c2c42a980ae48edac3ad
 
-    # ---------------------------------------------------------
-    # SAISIE DES SCORES
-    # ---------------------------------------------------------
     def play_round_scores(self, tournament):
         """Appelle le contrôleur secondaire pour la saisie des scores."""
         if not tournament.rounds:
-            console.print("[yellow]Aucun round n'a encore été généré.[/yellow]")
+            console.print("[yellow]Aucun round n'a encore été généré pour ce tournoi.[/yellow]")
             return
 
         self.round_controller.enter_results(tournament)
-<<<<<<< HEAD
         console.print("[green]Scores du round enregistrés ![/green]")
 
     def delete_tournament(self):
@@ -316,6 +183,3 @@ class TournamentController:
         tournament_to_del = tournaments[int(choice) - 1]
         tournaments_table.remove(TournamentQuery.name == tournament_to_del.name)
         console.print(f"[green]Le tournoi '{tournament_to_del.name}' a bien été supprimé.[/green]")
-=======
-        console.print("[green]Scores enregistrés ![/green]")
->>>>>>> 1511e2a3c98dd82fcb10c2c42a980ae48edac3ad

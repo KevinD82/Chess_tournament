@@ -1,7 +1,5 @@
 # models/tournament.py
 
-from models.round import Round
-
 
 class Tournament:
     """Modèle représentant un tournoi d'échecs."""
