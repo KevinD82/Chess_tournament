@@ -22,6 +22,10 @@ class TournamentController:
 
     def create_tournament(self):
         """Création d'un tournoi."""
+        # 1. On affiche la liste des tournois existants pour aider l'utilisateur
+        tournaments = [Tournament.from_dict(t) for t in tournaments_table.all()]
+        self.view.show_tournaments(tournaments)
+
         data = self.view.ask_tournament_info()
         if not data:
             return
