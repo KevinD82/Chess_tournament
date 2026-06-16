@@ -17,16 +17,26 @@ class PlayerController:
         self.view = PlayerView()
 
     def create_player(self):
+<<<<<<< HEAD
         """Création d'un joueur avec affichage préalable complet de la base."""
         console.print("\n[bold magenta]=== BASE DE DONNÉES DES JOUEURS ACTUELS ===[/bold magenta]")
         # Affiche le tableau Rich complet (N°, ID, Nom, Prénom, Naissance, Statut)
         self.list_players()
 
         # Déclenche ensuite le questionnaire de création
+=======
+        # Afficher les joueurs existants pour éviter les doublons
+        existing_players = [Player.from_dict(p) for p in players_table.all()]
+        if existing_players:
+            console.print("\n[bold cyan]Joueurs existants :[/bold cyan]")
+            self.view.show_players(existing_players)
+
+>>>>>>> 1511e2a3c98dd82fcb10c2c42a980ae48edac3ad
         data = self.view.ask_player_info()
         if not data:
             return
 
+<<<<<<< HEAD
         # Sécurité stricte doublon ID
         existing_players = players_table.search(where("national_id") == data["national_id"])
         if existing_players:
@@ -35,6 +45,13 @@ class PlayerController:
                 f"existe déjà dans votre base de données ![/bold red]"
             )
             return
+=======
+        # Vérification doublon par national_id
+        for p in existing_players:
+            if p.national_id == data["national_id"]:
+                console.print("[red]Un joueur avec ce National ID existe déjà ![/red]")
+                return
+>>>>>>> 1511e2a3c98dd82fcb10c2c42a980ae48edac3ad
 
         player = Player(**data)
         players_table.insert(player.to_dict())
@@ -74,6 +91,7 @@ class PlayerController:
             player = players[index]
             break
 
+<<<<<<< HEAD
         # Vérification des tournois en cours
         tournaments = [Tournament.from_dict(t) for t in tournaments_table.all()]
         
@@ -107,3 +125,15 @@ class PlayerController:
         else:
             players_table.remove(where("national_id") == player.national_id)
             console.print(f"[green]Le joueur {player.first_name} {player.last_name} a été supprimé de la base.[/green]")
+=======
+        # Vérifier si le joueur participe à un tournoi
+        tournaments = [Tournament.from_dict(t) for t in tournaments_table.all()]
+        for t in tournaments:
+            if player.national_id in getattr(t, "players", []):
+                console.print("[red]Impossible de supprimer ce joueur : il participe à un tournoi.[/red]")
+                console.print(f"[yellow]Tournoi concerné : {t.name}[/yellow]")
+                return
+
+        players_table.remove(where("national_id") == player.national_id)
+        console.print(f"[green]Joueur {player.first_name} {player.last_name} supprimé avec succès ![/green]")
+>>>>>>> 1511e2a3c98dd82fcb10c2c42a980ae48edac3ad

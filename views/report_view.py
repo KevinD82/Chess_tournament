@@ -9,6 +9,7 @@ console = Console()
 class ReportView:
     """Affichage des rapports et détails des tournois."""
 
+<<<<<<< HEAD
     def display_report_menu(self):
         """Affiche le menu des rapports avec le choix du classement général."""
         console.print("\n[bold green]=== RAPPORTS ===[/bold green]")
@@ -22,9 +23,39 @@ class ReportView:
     # ----------------------------------------------------------------------
     # DÉTAIL D’UN TOURNOI (Dynamique avec dates + heures réelles)
     # ----------------------------------------------------------------------
+=======
+    # ---------------------------------------------------------
+    # LISTE DES TOURNOIS
+    # ---------------------------------------------------------
+    def show_tournament_list(self, tournaments):
+        if not tournaments:
+            console.print("[yellow]Aucun tournoi enregistré.[/yellow]")
+            return
+
+        table = Table(show_header=True, header_style="bold cyan")
+        table.add_column("N°", justify="center")
+        table.add_column("Nom")
+        table.add_column("Lieu")
+        table.add_column("Dates")
+
+        for i, t in enumerate(tournaments, 1):
+            table.add_row(
+                str(i),
+                t.name,
+                t.location,
+                f"{t.start_date} → {t.end_date}"
+            )
+
+        console.print(table)
+
+    # ---------------------------------------------------------
+    # DÉTAIL D’UN TOURNOI
+    # ---------------------------------------------------------
+>>>>>>> 1511e2a3c98dd82fcb10c2c42a980ae48edac3ad
     def show_tournament_details(self, tournament, players_dict):
         console.print(f"\n[bold gold1]DÉTAILS DU TOURNOI : {tournament.name.upper()}[/bold gold1]\n")
 
+<<<<<<< HEAD
         console.print(f"Lieu : [white]{tournament.location}[/white]")
         console.print(f"Description : [white]{tournament.description or 'Aucune'}[/white]")
 
@@ -62,13 +93,26 @@ class ReportView:
         table = Table(show_header=True, header_style="bold green", border_style="dim")
         table.add_column("Joueurs Participants", justify="left")
         table.add_column("Statut", justify="center")
+=======
+        console.print(f"Lieu : {tournament.location}")
+        console.print(f"Dates : {tournament.start_date} → {tournament.end_date}")
+        console.print(f"Description : {tournament.description or 'Aucune'}")
+        console.print(f"Rounds prévus : {tournament.number_of_rounds}")
 
-        for p_id in tournament.players:
-            p = players_dict.get(p_id)
+        table = Table(show_header=True, header_style="bold green")
+        table.add_column("ID")
+        table.add_column("Nom")
+        table.add_column("Prénom")
+        table.add_column("Naissance")
+>>>>>>> 1511e2a3c98dd82fcb10c2c42a980ae48edac3ad
+
+        for pid in tournament.players:
+            p = players_dict.get(pid)
             if p:
                 status = "[green]Actif[/green]" if getattr(p, "is_active", True) else "[red]Inactif[/red]"
                 table.add_row(f"{p.last_name.upper()} {p.first_name} ({p_id})", status)
             else:
+<<<<<<< HEAD
                 table.add_row(f"Joueur inconnu ({p_id})", "[dim]N/A[/dim]")
 
         console.print(table)
@@ -76,6 +120,15 @@ class ReportView:
     # ----------------------------------------------------------------------
     # HISTORIQUE / RAPPORT COMPLET D'UN TOURNOI
     # ----------------------------------------------------------------------
+=======
+                table.add_row(pid, "Inconnu", "Inconnu", "N/A")
+
+        console.print(table)
+
+    # ---------------------------------------------------------
+    # RAPPORT COMPLET
+    # ---------------------------------------------------------
+>>>>>>> 1511e2a3c98dd82fcb10c2c42a980ae48edac3ad
     def show_full_tournament_report(self, tournament, ranking, players_data):
         console.print(f"\n[bold magenta]==================================================[/bold magenta]")
         console.print(f"[bold cyan]RAPPORT COMPLET : {tournament.name.upper()}[/bold cyan]")
@@ -98,6 +151,7 @@ class ReportView:
                 r_end = getattr(r, "end_time", "En cours")
                 matches = getattr(r, "matches", [])
 
+<<<<<<< HEAD
             console.print(f"[bold bright_blue]{r_name}[/bold bright_blue] — Début : {r_start} | Fin : {r_end or 'En cours'}")
 
             table = Table(show_header=True, header_style="bold cyan", border_style="dim")
@@ -122,10 +176,33 @@ class ReportView:
                 p2_name = players_data.get(p2_id, p2_id)
 
                 table.add_row(p1_name, str(s1), str(s2), p2_name)
+=======
+            table = Table(show_header=True, header_style="bold green")
+            table.add_column("Joueur 1")
+            table.add_column("S1")
+            table.add_column("S2")
+            table.add_column("Joueur 2")
+
+            for m in r.matches:
+                if isinstance(m, dict):
+                    p1, s1 = m["player1"], m["score1"]
+                    p2, s2 = m["player2"], m["score2"]
+                else:
+                    p1, s1 = m.player1, m.score1
+                    p2, s2 = m.player2, m.score2
+
+                table.add_row(
+                    players_data.get(p1, p1),
+                    str(s1),
+                    str(s2),
+                    players_data.get(p2, p2)
+                )
+>>>>>>> 1511e2a3c98dd82fcb10c2c42a980ae48edac3ad
 
             console.print(table)
             console.print()
 
+<<<<<<< HEAD
         console.print("[bold gold1]CLASSEMENT DU TOURNOI[/bold gold1]\n")
 
         table = Table(show_header=True, header_style="bold green", border_style="dim")
@@ -144,6 +221,18 @@ class ReportView:
 
             p_name = players_data.get(p_id, "Joueur Inconnu")
             table.add_row(str(rank), p_name, str(p_id), f"{total_score} pts")
+=======
+        console.print("\n[bold gold1]CLASSEMENT FINAL[/bold gold1]\n")
+
+        table = Table(show_header=True, header_style="bold green")
+        table.add_column("Rang")
+        table.add_column("ID")
+        table.add_column("Nom")
+        table.add_column("Points")
+
+        for rank, (pid, score, name) in enumerate(ranking, 1):
+            table.add_row(str(rank), pid, name, f"{score:.1f}")
+>>>>>>> 1511e2a3c98dd82fcb10c2c42a980ae48edac3ad
 
         console.print(table)
         console.print("\n[dim]Fin du rapport.[/dim]")

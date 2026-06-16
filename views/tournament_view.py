@@ -14,8 +14,9 @@ class TournamentView:
         console.print("\n[bold cyan]=== GESTION DES TOURNOIS ===[/bold cyan]")
         console.print("1. Créer un tournoi")
         console.print("2. Liste des tournois")
-        console.print("3. Piloter un tournoi")
-        console.print("4. Supprimer un tournoi")
+        console.print("3. Ajouter des joueurs à un tournoi")
+        console.print("4. Piloter un tournoi")
+        console.print("5. Supprimer un tournoi")
         console.print("0. Retour")
         return console.input("\n[bold yellow]Votre choix : [/bold yellow]")
 
@@ -139,6 +140,7 @@ class TournamentView:
 
         console.print(table)
 
+<<<<<<< HEAD
     def select_4_players(self, active_players):
         """Affiche la liste complète des joueurs avec leur statut actuel pour sélection."""
         console.print("\n[bold cyan]=== SÉLECTION DES 4 PARTICIPANTS AU TOURNOI ===[/bold cyan]")
@@ -178,3 +180,66 @@ class TournamentView:
                 break
                 
         return selected_ids
+=======
+    def select_tournament(self, tournaments):
+        self.show_tournaments(tournaments)
+        choice = console.input("\nNuméro du tournoi : ").strip()
+
+        if not choice.isdigit():
+            console.print("[red]Veuillez entrer un numéro valide.[/red]")
+            return None
+
+        index = int(choice) - 1
+        if index < 0 or index >= len(tournaments):
+            console.print("[red]Numéro hors liste.[/red]")
+            return None
+
+        return tournaments[index]
+
+    # ---------------------------------------------------------
+    # SÉLECTION GUIDÉE DES 4 JOUEURS
+    # ---------------------------------------------------------
+    def select_players(self, players):
+        console.print("\n[bold cyan]Sélection des joueurs pour le tournoi[/bold cyan]")
+
+        table = Table(show_header=True, header_style="bold cyan", border_style="dim")
+        table.add_column("N°", justify="center")
+        table.add_column("Nom")
+        table.add_column("National ID", justify="center")
+
+        for i, p in enumerate(players, 1):
+            table.add_row(
+                str(i),
+                f"{p['first_name']} {p['last_name']}",
+                p["national_id"]
+            )
+
+        console.print(table)
+
+        selected = []
+        used_indexes = set()
+
+        for n in range(1, 5):
+            while True:
+                choice = console.input(f"Numéro du joueur {n} : ").strip()
+
+                if not choice.isdigit():
+                    console.print("[red]Veuillez entrer un numéro valide.[/red]")
+                    continue
+
+                index = int(choice) - 1
+
+                if index < 0 or index >= len(players):
+                    console.print("[red]Numéro hors liste.[/red]")
+                    continue
+
+                if index in used_indexes:
+                    console.print("[red]Ce joueur est déjà sélectionné ![/red]")
+                    continue
+
+                used_indexes.add(index)
+                selected.append(players[index])
+                break
+
+        return selected
+>>>>>>> 1511e2a3c98dd82fcb10c2c42a980ae48edac3ad
