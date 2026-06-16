@@ -1,3 +1,5 @@
+# views/player_view.py
+
 from datetime import datetime
 from rich.console import Console
 from rich.table import Table
@@ -35,13 +37,9 @@ class PlayerView:
                 birth_date_str = console.input("Date de naissance (JJ/MM/AAAA) : ").strip()
                 try:
                     birth_date = datetime.strptime(birth_date_str, "%d/%m/%Y")
-                    age = datetime.today().year - birth_date.year
-                    if age < 10:
-                        console.print("[red]Le joueur doit avoir au moins 10 ans.[/red]")
-                        continue
                     break
                 except ValueError:
-                    console.print("[red]Format invalide.[/red]")
+                    console.print("[red]Format invalide (JJ/MM/AAAA).[/red]")
 
             while True:
                 national_id = console.input("ID National (AB12345) : ").strip().upper()
@@ -74,8 +72,17 @@ class PlayerView:
         table.add_column("Nom")
         table.add_column("Prénom")
         table.add_column("Naissance", justify="center")
+        table.add_column("Statut", justify="center")  # Nouvelle colonne statut
 
         for i, p in enumerate(players, 1):
-            table.add_row(str(i), p.national_id, p.last_name, p.first_name, p.birthdate)
+            status_text = "[green]Actif[/green]" if p.is_active else "[red]Inactif[/red]"
+            table.add_row(
+                str(i),
+                p.national_id,
+                p.last_name,
+                p.first_name,
+                p.birthdate,
+                status_text
+            )
 
         console.print(table)
