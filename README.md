@@ -11,11 +11,11 @@ Le gestionnaire permet :
 
 - Création et gestion de tournois
 - Ajout et gestion des joueurs
-- Génération automatique des rounds (Round‑Robin)
+- Génération des rounds (Round‑Robin)
 - Gestion des matchs et attribution des scores
-- Classement final automatique
-- Historique complet des tournois
+- Historique des tournois
 - Rapports détaillés
+- Classement général
 - Sauvegarde et chargement via TinyDB
 
 ---
@@ -65,6 +65,8 @@ Assurez-vous d’avoir Python 3.10+ installé.
 
 ### 1. Installer les dépendances
 ```
+python -m venv venv
+venv\Scripts\activate
 pip install -r requirements.txt
 ```
 
