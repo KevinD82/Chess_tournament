@@ -1,3 +1,5 @@
+# controllers/menu_controller.py
+
 from controllers.player_controller import PlayerController
 from controllers.tournament_controller import TournamentController
 from controllers.report_controller import ReportController
@@ -65,21 +67,7 @@ class MenuController:
                 console.print("[red]Choix invalide.[/red]")
 
     def menu_reports(self):
-        while True:
-            choice = self.view.display_report_menu().strip()
-
-            if choice == "1":
-                # Correction : on utilise le contrôleur des tournois
-                self.tournament_controller.list_tournaments()
-
-            elif choice == "2":
-                self.report_controller.tournament_details()
-
-            elif choice == "3":
-                self.report_controller.full_history()
-
-            elif choice == "0":
-                return
-
-            else:
-                console.print("[red]Choix invalide.[/red]")
+        """Délègue la gestion des rapports au sous-contrôleur dédié."""
+        # On quitte l'ancienne boucle locale pour exécuter la logique 
+        # et le menu à 4 choix du ReportController
+        self.report_controller.run()
