@@ -63,24 +63,29 @@ CHESS_TOURNAMENT/
 
 Assurez-vous d’avoir Python 3.10+ installé.
 
-### 1. Installer les dépendances
+### 1. Créer l'environnement
 ```
 python -m venv venv
-venv\Scripts\activate
+venv\Scripts\activate     # windows
+source env/bin/activate   # Mac/Linux
+```
+
+### 2. Installer les dépendances
+```
 pip install -r requirements.txt
 ```
 
-### 2. Lancer l’application
+### 3. Lancer l’application
 ```
 python main.py
 ```
 
-### Générer le rapport :
+### 4. Générer le rapport :
 ```
 flake8 --format=html --htmldir=flake8_rapport
 ```
 
-### Le rapport sera disponible ici :
+### 5. Le rapport sera disponible ici :
 ```
 flake8-report/index.html
 ```
