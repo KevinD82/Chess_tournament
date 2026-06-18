@@ -17,7 +17,6 @@ class ReportController:
     def run(self):
         """Boucle principale du menu des rapports."""
         while True:
-            # CORRECTIF : On utilise menu_view ici au lieu de report_view
             choice = self.menu_view.display_report_menu()
 
             if choice == "1":
