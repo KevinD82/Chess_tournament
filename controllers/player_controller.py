@@ -1,3 +1,6 @@
+# controllers/player_controller.py
+
+from datetime import datetime, date
 from models.player import Player
 from models.tournament import Tournament
 from database import players_table, tournaments_table
@@ -15,21 +18,33 @@ class PlayerController:
         self.view = PlayerView()
 
     def create_player(self):
-        # Afficher les joueurs existants pour éviter les doublons
-        existing_players = [Player.from_dict(p) for p in players_table.all()]
-        if existing_players:
-            console.print("\n[bold cyan]Joueurs existants :[/bold cyan]")
-            self.view.show_players(existing_players)
+        """Création d'un joueur avec vérification stricte de l'âge >= 10 ans."""
+        console.print("\n[bold magenta]=== AJOUT D'UN NOUVEAU JOUEUR ===[/bold magenta]")
+        self.list_players()
 
         data = self.view.ask_player_info()
         if not data:
             return
 
-        # Vérification doublon par national_id
-        for p in existing_players:
-            if p.national_id == data["national_id"]:
-                console.print("[red]Un joueur avec ce National ID existe déjà ![/red]")
+        # Validation de l'âge (via la date récupérée)
+        try:
+            birth_date_str = data.get("birth_date") or data.get("birthdate")
+            birth_date = datetime.strptime(birth_date_str, "%d/%m/%Y").date()
+            today = date.today()
+            age = today.year - birth_date.year - (
+                (today.month, today.day) < (birth_date.month, birth_date.day)
+            )
+
+            if age < 10:
+                console.print(f"[bold red]ERREUR : Âge ({age} ans). Minimum 10 ans requis ![/bold red]")
                 return
+        except ValueError:
+            console.print("[bold red]ERREUR : Format de date invalide.[/bold red]")
+            return
+
+        if players_table.search(where("national_id") == data["national_id"]):
+            console.print(f"\n[bold red]Erreur : L'ID '{data['national_id']}' existe déjà ![/bold red]")
+            return
 
         player = Player(**data)
         players_table.insert(player.to_dict())
@@ -41,39 +56,31 @@ class PlayerController:
 
     def delete_player(self):
         players = [Player.from_dict(p) for p in players_table.all()]
-
         if not players:
             console.print("[yellow]Aucun joueur enregistré.[/yellow]")
             return
 
         self.view.show_players(players)
-
         while True:
-            choice = console.input("Numéro du joueur à supprimer (Entrée vide = annuler) : ").strip()
-
+            choice = console.input("Numéro du joueur (Entrée = annuler) : ").strip()
             if choice == "":
-                console.print("[yellow]Suppression annulée.[/yellow]")
                 return
+            if choice.isdigit():
+                index = int(choice) - 1
+                if 0 <= index < len(players):
+                    player = players[index]
+                    break
 
-            if not choice.isdigit():
-                console.print("[red]Veuillez entrer un numéro valide.[/red]")
-                continue
-
-            index = int(choice) - 1
-            if index < 0 or index >= len(players):
-                console.print("[red]Numéro hors liste.[/red]")
-                continue
-
-            player = players[index]
-            break
-
-        # Vérifier si le joueur participe à un tournoi
         tournaments = [Tournament.from_dict(t) for t in tournaments_table.all()]
-        for t in tournaments:
-            if player.national_id in getattr(t, "players", []):
-                console.print("[red]Impossible de supprimer ce joueur : il participe à un tournoi.[/red]")
-                console.print(f"[yellow]Tournoi concerné : {t.name}[/yellow]")
-                return
+        is_in_ongoing = any(player.national_id in t.players and len(t.rounds) < t.number_of_rounds for t in tournaments)
 
-        players_table.remove(where("national_id") == player.national_id)
-        console.print(f"[green]Joueur {player.first_name} {player.last_name} supprimé avec succès ![/green]")
+        if is_in_ongoing:
+            console.print("[bold red]Action impossible : Joueur inscrit dans un tournoi en cours.[/bold red]")
+            return
+
+        if any(player.national_id in t.players for t in tournaments):
+            players_table.update({"is_active": False}, where("national_id") == player.national_id)
+            console.print("[green]Joueur passé en statut Inactif.[/green]")
+        else:
+            players_table.remove(where("national_id") == player.national_id)
+            console.print("[green]Joueur supprimé définitivement.[/green]")
