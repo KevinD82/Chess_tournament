@@ -41,7 +41,7 @@ class PlayerView:
                 return {
                     "last_name": last_name,
                     "first_name": first_name,
-                    "birthdate": birth_date_str,
+                    "birth_date": birth_date_str,
                     "national_id": national_id
                 }
 
