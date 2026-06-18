@@ -10,15 +10,6 @@ console = Console()
 class TournamentView:
     """Affichage des tournois."""
 
-    def display_tournament_menu(self):
-        console.print("\n[bold cyan]=== GESTION DES TOURNOIS ===[/bold cyan]")
-        console.print("1. Créer un tournoi")
-        console.print("2. Liste des tournois")
-        console.print("3. Piloter un tournoi")
-        console.print("4. Supprimer un tournoi")
-        console.print("0. Retour")
-        return console.input("\n[bold yellow]Votre choix : [/bold yellow]")
-
     def display_manage_menu(self, tournament):
         """Affiche le menu de pilotage avec le round actuel et son avancement."""
         console.print(f"\n[bold cyan]=== PILOTAGE : {tournament.name.upper()} ===[/bold cyan]")
