@@ -31,5 +31,15 @@ class MenuView:
         console.print("0. Retour\n")
         return console.input("[bold yellow]Votre choix : [/bold yellow]")
 
+    def display_report_menu(self):
+        """Affiche le menu des rapports avec le choix du classement général."""
+        console.print("\n[bold green]=== RAPPORTS ===[/bold green]")
+        console.print("1. Liste des tournois")
+        console.print("2. Détails d’un tournoi")
+        console.print("3. Historique complet")
+        console.print("4. Classement général (Tous tournois)")
+        console.print("0. Retour")
+        return console.input("\n[bold yellow]Votre choix : [/bold yellow]").strip()
+
     def exit_message(self):
         console.print("[green]Au revoir ![/green]")

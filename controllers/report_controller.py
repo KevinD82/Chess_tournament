@@ -3,7 +3,8 @@
 from database import tournaments_table, players_table
 from models.tournament import Tournament
 from views.report_view import ReportView
-from rich.console import Console  # Import nécessaire ici
+from views.menu_view import MenuView  # Import bien conservé
+from rich.console import Console
 
 
 class ReportController:
@@ -11,11 +12,13 @@ class ReportController:
 
     def __init__(self):
         self.report_view = ReportView()
+        self.menu_view = MenuView()
 
     def run(self):
         """Boucle principale du menu des rapports."""
         while True:
-            choice = self.report_view.display_report_menu()
+            # CORRECTIF : On utilise menu_view ici au lieu de report_view
+            choice = self.menu_view.display_report_menu()
 
             if choice == "1":
                 self.list_all_tournaments()
@@ -43,7 +46,6 @@ class ReportController:
         tournaments_objects = [Tournament.from_dict(t) for t in tournaments_data]
         t_view.show_tournaments(tournaments_objects)
 
-        # CORRECTIF : Utilisation d'une instance Console locale pour éviter l'AttributeError
         console = Console()
         choice = console.input("\n[bold yellow]Sélectionnez le numéro du tournoi : [/bold yellow]").strip()
 
@@ -81,7 +83,6 @@ class ReportController:
             for p in players_table.all():
                 players_data[p["national_id"]] = f"{p['last_name'].upper()} {p['first_name']}"
 
-            # CORRECTIF : Calcul explicite des scores pour éviter les "N/A"
             tournament_scores = {p_id: 0.0 for p_id in tournament.players}
 
             for r in tournament.rounds:

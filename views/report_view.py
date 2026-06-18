@@ -9,16 +9,6 @@ console = Console()
 class ReportView:
     """Affichage des rapports et détails des tournois."""
 
-    def display_report_menu(self):
-        """Affiche le menu des rapports avec le choix du classement général."""
-        console.print("\n[bold green]=== RAPPORTS ===[/bold green]")
-        console.print("1. Liste des tournois")
-        console.print("2. Détails d’un tournoi")
-        console.print("3. Historique complet")
-        console.print("4. Classement général (Tous tournois)")
-        console.print("0. Retour")
-        return console.input("\n[bold yellow]Votre choix : [/bold yellow]").strip()
-
     # ----------------------------------------------------------------------
     # DÉTAIL D’UN TOURNOI (Dynamique avec dates + heures réelles)
     # ----------------------------------------------------------------------
