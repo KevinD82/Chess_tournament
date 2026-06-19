@@ -62,20 +62,27 @@ class TournamentView:
             if not location:
                 console.print("[red]Lieu vide.[/red]")
                 continue
+
+            # Validation Date de début
             while True:
                 start_date_str = console.input("Début (JJ/MM/AAAA) : ").strip()
                 try:
-                    datetime.strptime(start_date_str, "%d/%m/%Y")
+                    start_date = datetime.strptime(start_date_str, "%d/%m/%Y")
                     break
                 except ValueError:
                     console.print("[red]Format de date invalide.[/red]")
+
             while True:
                 end_date_str = console.input("Fin (JJ/MM/AAAA) : ").strip()
                 try:
-                    datetime.strptime(end_date_str, "%d/%m/%Y")
+                    end_date = datetime.strptime(end_date_str, "%d/%m/%Y")
+                    if end_date < start_date:
+                        console.print("[red]Date de fin antérieure à la date de début. Veuillez ressaisir.[/red]")
+                        continue
                     break
                 except ValueError:
                     console.print("[red]Format de date invalide.[/red]")
+
             description = console.input("Description : ").strip()
 
             console.print("\n[bold yellow]Récapitulatif[/bold yellow]")

@@ -4,7 +4,7 @@ from datetime import datetime
 from models.tournament import Tournament
 from models.round import Round
 from models.match import Match
-from models.player import Player  # Import placé ici de manière globale pour le fichier
+from models.player import Player
 from database import tournaments_table, players_table, TournamentQuery
 from views.tournament_view import TournamentView
 from controllers.round_controller import RoundController
