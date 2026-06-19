@@ -10,7 +10,6 @@ class Tournament:
         self.start_date = start_date
         self.end_date = end_date
         self.description = description
-        # On force la valeur à 3 indépendamment de ce qui pourrait être envoyé
         self.number_of_rounds = 3
         self.rounds = []
         self.players = []
@@ -38,7 +37,7 @@ class Tournament:
             start_date=data.get("start_date"),
             end_date=data.get("end_date"),
             description=data.get("description", ""),
-            number_of_rounds=3  # Assure la cohérence des anciennes données lues
+            number_of_rounds=3
         )
         tournament.rounds = data.get("rounds", [])
         tournament.players = data.get("players", [])
